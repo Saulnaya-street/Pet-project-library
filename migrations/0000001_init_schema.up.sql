@@ -11,7 +11,7 @@ CREATE TABLE books (
                        genre VARCHAR(255) NOT NULL,
                        name VARCHAR(255) NOT NULL,
                        author VARCHAR(255) NOT NULL,
-                       year SERIAL
+                       year SERIAL NOT NULL
 );
 
 CREATE TABLE user_book (
