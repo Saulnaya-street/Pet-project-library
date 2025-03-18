@@ -23,5 +23,3 @@ CREATE TABLE user_book (
 CREATE INDEX idx_book_author ON books(author);
 CREATE INDEX idx_book_year ON books(year);
 CREATE INDEX idx_book_genre ON books(genre);
-CREATE INDEX idx_user_book_user ON user_book(user_id);
-CREATE INDEX idx_user_book_book ON user_book(book_id);
