@@ -1,0 +1,9 @@
+DROP INDEX IF EXISTS idx_book_author;
+DROP INDEX IF EXISTS idx_book_year;
+DROP INDEX IF EXISTS idx_book_genre;
+
+DROP TABLE IF EXISTS book;
+DROP TABLE IF EXISTS genre;
+DROP TABLE IF EXISTS "user";
+
+DROP EXTENSION IF EXISTS "uuid-ossp";
