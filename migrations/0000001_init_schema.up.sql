@@ -1,31 +1,27 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE TABLE "user" (
-                        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                        id UUID PRIMARY KEY,
                         username VARCHAR(255) NOT NULL UNIQUE,
                         email VARCHAR(255) NOT NULL UNIQUE,
                         password_hash VARCHAR(255) NOT NULL,
-                        is_admin BOOLEAN NOT NULL DEFAULT FALSE,
-                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE genre (
-                       id_genre UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                       name_genre VARCHAR(255) NOT NULL UNIQUE,
-                       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                        is_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE book (
-                      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                      id_user UUID NOT NULL REFERENCES "user"(id),
-                      id_genre UUID NOT NULL REFERENCES genre(id_genre),
+                      id UUID PRIMARY KEY,
+                      genre VARCHAR(255) NOT NULL,
                       name VARCHAR(255) NOT NULL,
                       author VARCHAR(255) NOT NULL,
-                      year INTEGER NOT NULL,
-                      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                      year INTEGER NOT NULL CHECK (year >= 0)
+    );
+
+CREATE TABLE user_book (
+                           user_id UUID REFERENCES "user"(id),
+                           book_id UUID REFERENCES book(id),
+                           PRIMARY KEY (user_id, book_id)
 );
 
 CREATE INDEX idx_book_author ON book(author);
 CREATE INDEX idx_book_year ON book(year);
-CREATE INDEX idx_book_genre ON book(id_genre);
+CREATE INDEX idx_book_genre ON book(genre);
+CREATE INDEX idx_user_book_user ON user_book(user_id);
+CREATE INDEX idx_user_book_book ON user_book(book_id);
