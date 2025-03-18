@@ -7,18 +7,18 @@ CREATE TABLE users (
 );
 
 CREATE TABLE books (
-                       id SERIAL PRIMARY KEY,
+                       id UUID PRIMARY KEY,
                        genre VARCHAR(255) NOT NULL,
                        name VARCHAR(255) NOT NULL,
                        author VARCHAR(255) NOT NULL,
-                       year INTEGER NOT NULL CHECK (year >= 0)
-    );
+                       year SERIAL
+);
 
 CREATE TABLE user_book (
                            user_id UUID REFERENCES users(id),
                            book_id UUID REFERENCES books(id),
                            PRIMARY KEY (user_id, book_id)
-    );
+);
 
 CREATE INDEX idx_book_author ON books(author);
 CREATE INDEX idx_book_year ON books(year);
