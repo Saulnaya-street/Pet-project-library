@@ -1,6 +1,3 @@
-DROP INDEX IF EXISTS idx_book_author;
-DROP INDEX IF EXISTS idx_book_year;
-DROP INDEX IF EXISTS idx_book_genre;
 DROP TABLE IF EXISTS user_book;
 DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS users;
