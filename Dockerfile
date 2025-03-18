@@ -14,6 +14,8 @@ RUN ls -la /app
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o main ./main.go > /tmp/build.log 2>&1 || (cat /tmp/build.log && false)
 
+FROM golang:1.21-alpine
+
 WORKDIR /app
 
 COPY --from=builder /app/main .

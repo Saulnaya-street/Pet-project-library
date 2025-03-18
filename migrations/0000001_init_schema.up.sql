@@ -1,4 +1,4 @@
-CREATE TABLE user (
+CREATE TABLE users (
                         id UUID PRIMARY KEY,
                         username VARCHAR(255) NOT NULL UNIQUE,
                         email VARCHAR(255) NOT NULL UNIQUE,
@@ -6,7 +6,7 @@ CREATE TABLE user (
                         is_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE book (
+CREATE TABLE books (
                       id UUID PRIMARY KEY,
                       genre VARCHAR(255) NOT NULL,
                       name VARCHAR(255) NOT NULL,
@@ -20,8 +20,8 @@ CREATE TABLE user_book (
                            PRIMARY KEY (user_id, book_id)
 );
 
-CREATE INDEX idx_book_author ON book(author);
-CREATE INDEX idx_book_year ON book(year);
-CREATE INDEX idx_book_genre ON book(genre);
+CREATE INDEX idx_book_author ON books(author);
+CREATE INDEX idx_book_year ON books(year);
+CREATE INDEX idx_book_genre ON books(genre);
 CREATE INDEX idx_user_book_user ON user_book(user_id);
 CREATE INDEX idx_user_book_book ON user_book(book_id);
