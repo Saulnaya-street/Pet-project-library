@@ -1,10 +1,10 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type Config struct {
@@ -16,18 +16,24 @@ type Config struct {
 	SSLMode  string
 }
 
-// NewPostgresDB создает новое подключение к базе данных PostgreSQL
-func NewPostgresDB(cfg Config) (*sqlx.DB, error) {
-	db, err := sqlx.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.DBName, cfg.SSLMode))
+func NewPostgresDB(cfg Config) (*pgxpool.Pool, error) {
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.DBName, cfg.SSLMode)
+
+	poolConfig, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ошибка разбора строки подключения: %w", err)
 	}
 
-	err = db.Ping()
+	pool, err := pgxpool.ConnectConfig(context.Background(), poolConfig)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ошибка подключения к базе данных: %w", err)
 	}
 
-	return db, nil
+	// Проверяем соединение
+	if err := pool.Ping(context.Background()); err != nil {
+		return nil, fmt.Errorf("ошибка проверки соединения: %w", err)
+	}
+
+	return pool, nil
 }

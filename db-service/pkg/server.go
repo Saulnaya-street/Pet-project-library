@@ -6,56 +6,32 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/jmoiron/sqlx"
-	"github.com/rs/cors"
-
-	"awesomeProject22/db-service/internal/delivery/handler"
-	"awesomeProject22/db-service/internal/repository"
-	"awesomeProject22/db-service/internal/service"
 )
 
 type Server struct {
 	httpServer *http.Server
-	db         *sqlx.DB
+	router     *mux.Router
 }
 
-func NewServer(db *sqlx.DB) *Server {
+func NewServer() *Server {
+	router := mux.NewRouter()
+
 	return &Server{
-		db: db,
+		router: router,
+	}
+}
+
+func (s *Server) SetupRoutes(handlers map[string]http.Handler) {
+	for prefix, handler := range handlers {
+		s.router.PathPrefix(prefix).Handler(handler)
 	}
 }
 
 func (s *Server) Run(port string) error {
-	// Инициализируем репозитории
-	bookRepo := repository.NewBookRepository(s.db)
-
-	// Инициализируем сервисы (используем мок для пользовательского сервиса)
-	userService := &service.MockUserService{}
-	bookService := service.NewBookService(bookRepo, userService)
-
-	// Инициализируем обработчики
-	bookHandler := handler.NewBookHandler(bookService)
-
-	// Создаем роутер
-	router := mux.NewRouter()
-
-	// Регистрируем маршруты
-	bookHandler.RegisterRoutes(router)
-
-	// Добавляем CORS middleware
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: true,
-		MaxAge:           300,
-	})
-
 	// Создаем HTTP сервер
 	s.httpServer = &http.Server{
 		Addr:           ":" + port,
-		Handler:        c.Handler(router),
+		Handler:        s.router,
 		MaxHeaderBytes: 1 << 20,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
@@ -65,6 +41,7 @@ func (s *Server) Run(port string) error {
 	return s.httpServer.ListenAndServe()
 }
 
+// Shutdown gracefully останавливает сервер
 func (s *Server) Shutdown(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }

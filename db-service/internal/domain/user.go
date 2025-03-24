@@ -11,11 +11,15 @@ type UserRepository interface {
 	GetByEmail(email string) (*User, error)
 	Update(user *User) error
 	Delete(id uuid.UUID) error
+	GetAll() ([]*User, error)
 }
 
 type UserService interface {
-	Create(user *User, password string) error
-	Authenticate(username, password string) (string, error)
 	GetByID(id uuid.UUID) (*User, error)
+	Create(user *User, password string) error
+	Update(user *User, passwordChanged bool, newPassword string) error
+	Delete(id uuid.UUID) error
+	Authenticate(username, password string) (string, error)
 	IsAdmin(id uuid.UUID) (bool, error)
+	GetAll() ([]*User, error)
 }

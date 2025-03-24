@@ -5,22 +5,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="567c3a7e-a14a-4370-ab63-d9d0af54579b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/db-service/cmd/main.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/delivery/handler/book_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/domain/Library_model.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/domain/book.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/domain/user.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/repository/book_repository.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/repository/db.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/service/book_service.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/service/mock_user_service.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/pkg/server.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/db-service/internal/delivery/handler/user_handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/db-service/internal/repository/user_repository.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/db-service/internal/service/user_service.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/db-service/pkg/controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/201d3abe-713f-4d58-adac-f98f41e8f81a.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/201d3abe-713f-4d58-adac-f98f41e8f81a/storage_v2/_src_/database/Library.m7wgbQ.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/201d3abe-713f-4d58-adac-f98f41e8f81a/storage_v2/_src_/database/Library.m7wgbQ/schema/public.abK9xQ.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/main.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/cmd/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/delivery/handler/book_handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/delivery/handler/book_handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/domain/Library_model.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/domain/library_model.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/domain/book.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/domain/book.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/domain/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/domain/user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/repository/book_repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/repository/book_repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/repository/db.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/repository/db.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/service/book_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/service/book_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/service/mock_user_service.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/pkg/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/pkg/server.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/0000001_init_schema.down.sql" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/migrations/0000001_init_schema.down.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/0000001_init_schema.up.sql" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/migrations/0000001_init_schema.up.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,10 +62,10 @@
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "feature/db-service",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "C:/Users/soaso",
+    "last_opened_file_path": "C:/Users/soaso/GolandProjects/awesomeProject20",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm"
