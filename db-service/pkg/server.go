@@ -32,7 +32,7 @@ func (s *Server) SetupRoutes(handlers map[string]http.Handler) {
 }
 
 func (s *Server) Run(port string) error {
-	// Создаем HTTP сервер
+
 	s.httpServer = &http.Server{
 		Addr:           ":" + port,
 		Handler:        s.router,
@@ -41,11 +41,9 @@ func (s *Server) Run(port string) error {
 		WriteTimeout:   10 * time.Second,
 	}
 
-	// Запускаем сервер
 	return s.httpServer.ListenAndServe()
 }
 
-// Shutdown gracefully останавливает сервер
 func (s *Server) Shutdown(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }

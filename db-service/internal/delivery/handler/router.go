@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Router - структура для регистрации маршрутов API
 type Router struct {
 	bookHandler IBookHandler
 	userHandler IUserHandler

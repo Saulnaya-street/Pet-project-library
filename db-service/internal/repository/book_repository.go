@@ -56,13 +56,11 @@ func (r *BookRepositoryImpl) GetByID(id uuid.UUID) (*domain.Book, error) {
 func (r *BookRepositoryImpl) GetAll(author, genre string) ([]*domain.Book, error) {
 	books := []*domain.Book{}
 
-	// Начинаем формировать базовый запрос
 	query := `SELECT id, genre, name, author, year FROM books`
 	params := []interface{}{}
 	var conditions []string
 	paramIndex := 1
 
-	// Добавляем условия, если они заданы
 	if author != "" {
 		conditions = append(conditions, fmt.Sprintf("author = $%d", paramIndex))
 		params = append(params, author)
@@ -74,19 +72,16 @@ func (r *BookRepositoryImpl) GetAll(author, genre string) ([]*domain.Book, error
 		params = append(params, genre)
 	}
 
-	// Добавляем WHERE, только если есть условия
 	if len(conditions) > 0 {
 		query += " WHERE " + strings.Join(conditions, " AND ")
 	}
 
-	// Выполняем запрос
 	rows, err := r.db.Query(context.Background(), query, params...)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса GetAll: %w", err)
 	}
 	defer rows.Close()
 
-	// Обрабатываем результаты
 	for rows.Next() {
 		var book domain.Book
 		err := rows.Scan(&book.ID, &book.Genre, &book.Name, &book.Author, &book.Year)

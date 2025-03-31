@@ -9,12 +9,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// UserServiceImpl - реализация сервиса пользователей
 type UserServiceImpl struct {
 	repo repository.IUserRepository
 }
 
-// NewUserService - конструктор сервиса пользователей
 func NewUserService(repo repository.IUserRepository) IUserService {
 	return &UserServiceImpl{
 		repo: repo,
@@ -30,7 +28,6 @@ func (s *UserServiceImpl) Create(user *domain.User, password string) error {
 		user.ID = uuid.New()
 	}
 
-	// Хешируем пароль
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return fmt.Errorf("ошибка при хешировании пароля: %w", err)
@@ -42,13 +39,12 @@ func (s *UserServiceImpl) Create(user *domain.User, password string) error {
 }
 
 func (s *UserServiceImpl) Update(user *domain.User, passwordChanged bool, newPassword string) error {
-	// Проверяем существование пользователя
+
 	_, err := s.repo.GetByID(user.ID)
 	if err != nil {
 		return fmt.Errorf("пользователь для обновления не найден: %w", err)
 	}
 
-	// Если пароль меняется, хешируем новый пароль
 	if passwordChanged {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 		if err != nil {
@@ -56,8 +52,7 @@ func (s *UserServiceImpl) Update(user *domain.User, passwordChanged bool, newPas
 		}
 		user.PasswordHash = string(hashedPassword)
 	} else {
-		// Если пароль не меняется, сохраняем существующий хеш
-		// Получаем хеш пароля из базы данных
+
 		userWithPass, err := s.getUserWithPassword(user.ID)
 		if err != nil {
 			return fmt.Errorf("ошибка при получении пароля пользователя: %w", err)
@@ -68,23 +63,15 @@ func (s *UserServiceImpl) Update(user *domain.User, passwordChanged bool, newPas
 	return s.repo.Update(user)
 }
 
-// Вспомогательный метод для получения пользователя с паролем
 func (s *UserServiceImpl) getUserWithPassword(id uuid.UUID) (*domain.User, error) {
-	// Получаем данные из базы, включая пароль
-	// Этот метод сделан отдельно, чтобы не менять существующие методы репозитория
-	// и чтобы не добавлять новую функцию в интерфейс
+
 	var user domain.User
 
-	// Заглушка - в реальном коде здесь будет запрос к базе данных
-	// В вашем случае, нужно будет добавить метод в репозиторий,
-	// который возвращает пользователя с хешем пароля
 	userWithUsername, err := s.repo.GetByUsername(id.String())
 	if err == nil && userWithUsername != nil {
 		return userWithUsername, nil
 	}
 
-	// Если не удалось найти по username, можно попробовать другой подход
-	// или вернуть ошибку
 	return &user, fmt.Errorf("не удалось получить пароль пользователя")
 }
 

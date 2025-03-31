@@ -10,12 +10,10 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-// UserRepositoryImpl - реализация репозитория пользователей
 type UserRepositoryImpl struct {
 	db *pgxpool.Pool
 }
 
-// NewUserRepository - конструктор репозитория пользователей
 func NewUserRepository(db *pgxpool.Pool) IUserRepository {
 	return &UserRepositoryImpl{
 		db: db,
@@ -23,7 +21,6 @@ func NewUserRepository(db *pgxpool.Pool) IUserRepository {
 }
 
 func (r *UserRepositoryImpl) Create(user *domain.User) error {
-	// Генерируем UUID, если он не был установлен
 	if user.ID == uuid.Nil {
 		user.ID = uuid.New()
 	}
@@ -40,7 +37,6 @@ func (r *UserRepositoryImpl) Create(user *domain.User) error {
 
 func (r *UserRepositoryImpl) GetByID(id uuid.UUID) (*domain.User, error) {
 	var user domain.User
-	// Не выбираем password_hash в запросе
 	query := `SELECT id, username, email, is_admin FROM users WHERE id = $1`
 
 	err := r.db.QueryRow(context.Background(), query, id).Scan(
@@ -57,7 +53,6 @@ func (r *UserRepositoryImpl) GetByID(id uuid.UUID) (*domain.User, error) {
 
 func (r *UserRepositoryImpl) GetByUsername(username string) (*domain.User, error) {
 	var user domain.User
-	// Здесь нам нужен password_hash для аутентификации
 	query := `SELECT id, username, email, password_hash, is_admin FROM users WHERE username = $1`
 
 	err := r.db.QueryRow(context.Background(), query, username).Scan(
@@ -74,7 +69,7 @@ func (r *UserRepositoryImpl) GetByUsername(username string) (*domain.User, error
 
 func (r *UserRepositoryImpl) GetByEmail(email string) (*domain.User, error) {
 	var user domain.User
-	// Не выбираем password_hash в запросе
+
 	query := `SELECT id, username, email, is_admin FROM users WHERE email = $1`
 
 	err := r.db.QueryRow(context.Background(), query, email).Scan(
@@ -109,7 +104,7 @@ func (r *UserRepositoryImpl) Delete(id uuid.UUID) error {
 }
 
 func (r *UserRepositoryImpl) GetAll() ([]domain.User, error) {
-	// Не выбираем password_hash в запросе
+
 	query := `SELECT id, username, email, is_admin FROM users`
 
 	rows, err := r.db.Query(context.Background(), query)
@@ -118,7 +113,7 @@ func (r *UserRepositoryImpl) GetAll() ([]domain.User, error) {
 	}
 	defer rows.Close()
 
-	users := []domain.User{} // Инициализация пустого среза
+	users := []domain.User{}
 
 	for rows.Next() {
 		var user domain.User
