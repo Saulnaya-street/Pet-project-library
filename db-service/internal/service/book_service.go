@@ -2,44 +2,32 @@ package service
 
 import (
 	"awesomeProject22/db-service/internal/domain"
+	"awesomeProject22/db-service/internal/repository"
+	"fmt"
 	"github.com/google/uuid"
 )
 
-type BookService struct {
-	bookRepo domain.BookRepository
+// BookServiceImpl - реализация сервиса книг
+type BookServiceImpl struct {
+	bookRepo repository.IBookRepository
 }
 
-func NewBookService(bookRepo domain.BookRepository) *BookService {
-	return &BookService{
+// NewBookService - конструктор сервиса книг
+func NewBookService(bookRepo repository.IBookRepository) IBookService {
+	return &BookServiceImpl{
 		bookRepo: bookRepo,
 	}
 }
 
-// GetByID возвращает книгу по её ID
-func (s *BookService) GetByID(id uuid.UUID) (domain.Book, error) {
-	book, err := s.bookRepo.GetByID(id)
-	if err != nil {
-		return domain.Book{}, err
-	}
-	return *book, nil
+func (s *BookServiceImpl) GetByID(id uuid.UUID) (*domain.Book, error) {
+	return s.bookRepo.GetByID(id)
 }
 
-func (s *BookService) GetAll(author, genre string) ([]domain.Book, error) {
-	// Напрямую вызываем репозиторий с теми же параметрами
-	ptrBooks, err := s.bookRepo.GetAll(author, genre)
-	if err != nil {
-		return nil, err
-	}
-
-	books := make([]domain.Book, len(ptrBooks))
-	for i, ptr := range ptrBooks {
-		books[i] = *ptr
-	}
-
-	return books, nil
+func (s *BookServiceImpl) GetAll(author, genre string) ([]*domain.Book, error) {
+	return s.bookRepo.GetAll(author, genre)
 }
 
-func (s *BookService) Create(book *domain.Book) error {
+func (s *BookServiceImpl) Create(book *domain.Book) error {
 	if book.ID == uuid.Nil {
 		book.ID = uuid.New()
 	}
@@ -47,10 +35,22 @@ func (s *BookService) Create(book *domain.Book) error {
 	return s.bookRepo.Create(book)
 }
 
-func (s *BookService) Update(book *domain.Book) error {
+func (s *BookServiceImpl) Update(book *domain.Book) error {
+	// Проверяем существование книги перед обновлением
+	_, err := s.bookRepo.GetByID(book.ID)
+	if err != nil {
+		return fmt.Errorf("книга для обновления не найдена: %w", err)
+	}
+
 	return s.bookRepo.Update(book)
 }
 
-func (s *BookService) Delete(id uuid.UUID) error {
+func (s *BookServiceImpl) Delete(id uuid.UUID) error {
+	// Проверяем существование книги перед удалением
+	_, err := s.bookRepo.GetByID(id)
+	if err != nil {
+		return fmt.Errorf("книга для удаления не найдена: %w", err)
+	}
+
 	return s.bookRepo.Delete(id)
 }

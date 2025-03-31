@@ -1,25 +1,25 @@
-package pkg
+package controller
 
 import (
 	"awesomeProject22/db-service/internal/delivery/handler"
-	"awesomeProject22/db-service/internal/domain"
 	"awesomeProject22/db-service/internal/repository"
 	"awesomeProject22/db-service/internal/service"
+	"awesomeProject22/db-service/pkg"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"net/http"
 )
 
+// Controller - основной контроллер приложения
 type Controller struct {
 	db          *pgxpool.Pool
-	bookService domain.BookService
-	userService domain.UserService
-	server      *Server
-	bookHandler http.Handler
-	userHandler http.Handler
+	bookService service.IBookService
+	userService service.IUserService
+	server      *pkg.Server
+	bookHandler handler.IBookHandler
+	userHandler handler.IUserHandler
 }
 
+// NewController - конструктор контроллера
 func NewController(db *pgxpool.Pool) *Controller {
-
 	bookRepo := repository.NewBookRepository(db)
 	userRepo := repository.NewUserRepository(db)
 
@@ -29,7 +29,11 @@ func NewController(db *pgxpool.Pool) *Controller {
 	bookHandler := handler.NewBookHandler(bookService)
 	userHandler := handler.NewUserHandler(userService)
 
-	server := NewServer()
+	server := pkg.NewServer()
+
+	deliveryRouter := handler.NewRouter(bookHandler, userHandler)
+
+	deliveryRouter.RegisterRoutes(server.GetRouter())
 
 	return &Controller{
 		db:          db,
@@ -41,17 +45,7 @@ func NewController(db *pgxpool.Pool) *Controller {
 	}
 }
 
-func (c *Controller) InitRoutes() {
-
-	handlers := map[string]http.Handler{
-		"/api/books": c.bookHandler,
-		"/api/users": c.userHandler,
-		"/api/auth":  c.userHandler,
-	}
-
-	c.server.SetupRoutes(handlers)
-}
-
-func (c *Controller) GetServer() *Server {
+// GetServer - возвращает HTTP сервер
+func (c *Controller) GetServer() *pkg.Server {
 	return c.server
 }

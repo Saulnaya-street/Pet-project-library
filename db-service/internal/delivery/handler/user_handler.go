@@ -2,45 +2,45 @@ package handler
 
 import (
 	"awesomeProject22/db-service/internal/domain"
+	"awesomeProject22/db-service/internal/service"
 	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
-type UserHandler struct {
-	userService domain.UserService
-	router      *mux.Router
+type IUserHandler interface {
+	GetAllUsers(w http.ResponseWriter, r *http.Request)
+	GetUser(w http.ResponseWriter, r *http.Request)
+	CreateUser(w http.ResponseWriter, r *http.Request)
+	UpdateUser(w http.ResponseWriter, r *http.Request)
+	DeleteUser(w http.ResponseWriter, r *http.Request)
+	Login(w http.ResponseWriter, r *http.Request)
 }
 
-func NewUserHandler(userService domain.UserService) *UserHandler {
-	handler := &UserHandler{
+type UserHandler struct {
+	userService service.IUserService
+}
+
+func NewUserHandler(userService service.IUserService) IUserHandler {
+	return &UserHandler{
 		userService: userService,
-		router:      mux.NewRouter(),
+	}
+}
+
+func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := h.userService.GetAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	handler.registerRoutes()
-
-	return handler
-}
-
-func (h *UserHandler) registerRoutes() {
-	h.router.HandleFunc("/api/users", h.GetAllUsers).Methods("GET")
-	h.router.HandleFunc("/api/users/{id}", h.GetUser).Methods("GET")
-	h.router.HandleFunc("/api/users", h.CreateUser).Methods("POST")
-	h.router.HandleFunc("/api/users/{id}", h.UpdateUser).Methods("PUT")
-	h.router.HandleFunc("/api/users/{id}", h.DeleteUser).Methods("DELETE")
-	h.router.HandleFunc("/api/auth/login", h.Login).Methods("POST")
-
-}
-
-func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.router.ServeHTTP(w, r)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
 }
 
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := uuid.Parse(vars["id"])
+	id, err := uuid.Parse(mux.Vars(r)["id"])
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
@@ -51,8 +51,6 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-
-	user.PasswordHash = ""
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
@@ -82,16 +80,13 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.PasswordHash = ""
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(user)
 }
 
 func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := uuid.Parse(vars["id"])
+	id, err := uuid.Parse(mux.Vars(r)["id"])
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
@@ -119,25 +114,18 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	currentUser.Email = userInput.Email
 	currentUser.IsAdmin = userInput.IsAdmin
 
-	var passwordUpdated bool
-	if userInput.Password != "" {
-		passwordUpdated = true
-	}
-
-	if err := h.userService.Update(currentUser, passwordUpdated, userInput.Password); err != nil {
+	// Упрощаем логику обновления пароля
+	if err := h.userService.Update(currentUser, userInput.Password != "", userInput.Password); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	currentUser.PasswordHash = ""
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(currentUser)
 }
 
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := uuid.Parse(vars["id"])
+	id, err := uuid.Parse(mux.Vars(r)["id"])
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
@@ -170,20 +158,4 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"token": token})
-}
-
-func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := h.userService.GetAll()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Очищаем хеши паролей перед отправкой
-	for _, user := range users {
-		user.PasswordHash = ""
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(users)
 }

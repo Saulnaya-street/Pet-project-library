@@ -21,6 +21,10 @@ func NewServer() *Server {
 	}
 }
 
+func (s *Server) GetRouter() *mux.Router {
+	return s.router
+}
+
 func (s *Server) SetupRoutes(handlers map[string]http.Handler) {
 	for prefix, handler := range handlers {
 		s.router.PathPrefix(prefix).Handler(handler)

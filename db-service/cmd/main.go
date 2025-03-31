@@ -1,15 +1,14 @@
 package main
 
 import (
-	"awesomeProject22/db-service/pkg"
+	"awesomeProject22/db-service/internal/controller"
+	"awesomeProject22/db-service/internal/repository"
 	"context"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"awesomeProject22/db-service/internal/repository"
 )
 
 func getEnvOrDefault(key, defaultValue string) string {
@@ -21,7 +20,6 @@ func getEnvOrDefault(key, defaultValue string) string {
 }
 
 func main() {
-
 	dbConfig := repository.Config{
 		Host:     getEnvOrDefault("DB_HOST", "db"),
 		Port:     getEnvOrDefault("DB_PORT", "5432"),
@@ -40,8 +38,7 @@ func main() {
 
 	log.Println("Successfully connected to database")
 
-	controller := pkg.NewController(db)
-	controller.InitRoutes()
+	controller := controller.NewController(db)
 
 	srv := controller.GetServer()
 

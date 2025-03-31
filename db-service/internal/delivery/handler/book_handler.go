@@ -2,44 +2,32 @@ package handler
 
 import (
 	"awesomeProject22/db-service/internal/domain"
+	"awesomeProject22/db-service/internal/service"
 	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
+type IBookHandler interface {
+	GetAllBooks(w http.ResponseWriter, r *http.Request)
+	GetBook(w http.ResponseWriter, r *http.Request)
+	CreateBook(w http.ResponseWriter, r *http.Request)
+	UpdateBook(w http.ResponseWriter, r *http.Request)
+	DeleteBook(w http.ResponseWriter, r *http.Request)
+}
+
 type BookHandler struct {
-	bookService domain.BookService // поле которое хранит ссылку на сервисный слой
-	router      *mux.Router
+	bookService service.IBookService
 }
 
-func NewBookHandler(bookService domain.BookService) *BookHandler {
-	handler := &BookHandler{
+func NewBookHandler(bookService service.IBookService) IBookHandler {
+	return &BookHandler{
 		bookService: bookService,
-		router:      mux.NewRouter(),
 	}
-
-	handler.registerRoutes()
-
-	return handler
-}
-
-func (h *BookHandler) registerRoutes() {
-	h.router.HandleFunc("/api/books", h.GetAllBooks).Methods("GET")
-	h.router.HandleFunc("/api/books/{id}", h.GetBook).Methods("GET")
-	h.router.HandleFunc("/api/books", h.CreateBook).Methods("POST")
-	h.router.HandleFunc("/api/books/{id}", h.UpdateBook).Methods("PUT")
-	h.router.HandleFunc("/api/books/{id}", h.DeleteBook).Methods("DELETE")
-
-}
-
-// ServeHTTP реализует интерфейс http.Handler
-func (h *BookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.router.ServeHTTP(w, r)
 }
 
 func (h *BookHandler) GetAllBooks(w http.ResponseWriter, r *http.Request) {
-	// Получаем конкретные параметры фильтрации напрямую
 	author := r.URL.Query().Get("author")
 	genre := r.URL.Query().Get("genre")
 
