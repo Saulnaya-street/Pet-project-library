@@ -4,7 +4,20 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="567c3a7e-a14a-4370-ab63-d9d0af54579b" name="Changes" comment="" />
+    <list default="true" id="567c3a7e-a14a-4370-ab63-d9d0af54579b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/db-service/internal/cache/redis_client.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/db-service/internal/repository/cached_book_repository.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/db-service/internal/repository/cached_user_repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/awesomeProject22.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/cmd/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/controller/controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/controller/controller.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -53,8 +66,8 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\soaso\GolandProjects\awesomeProject22\db-service\internal\controller" />
       <recent name="C:\Users\soaso\GolandProjects\awesomeProject22\db-service\internal" />
+      <recent name="C:\Users\soaso\GolandProjects\awesomeProject22\db-service\internal\controller" />
       <recent name="C:\Users\soaso\GolandProjects\awesomeProject22\db-service\internal\delivery\handler" />
       <recent name="C:\Users\soaso\GolandProjects\awesomeProject22\db-service\pkg" />
       <recent name="C:\Users\soaso\GolandProjects\awesomeProject22\db-service\cmd" />

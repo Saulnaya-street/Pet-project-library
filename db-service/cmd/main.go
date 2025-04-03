@@ -1,6 +1,7 @@
 package main
 
 import (
+	"awesomeProject22/db-service/internal/cache"
 	"awesomeProject22/db-service/internal/controller"
 	"awesomeProject22/db-service/internal/repository"
 	"context"
@@ -20,6 +21,7 @@ func getEnvOrDefault(key, defaultValue string) string {
 }
 
 func main() {
+
 	dbConfig := repository.Config{
 		Host:     getEnvOrDefault("DB_HOST", "db"),
 		Port:     getEnvOrDefault("DB_PORT", "5432"),
@@ -29,16 +31,28 @@ func main() {
 		SSLMode:  getEnvOrDefault("DB_SSLMODE", "disable"),
 	}
 
+	redisConfig := cache.RedisConfig{
+		Host:     getEnvOrDefault("REDIS_HOST", "redis"),
+		Port:     getEnvOrDefault("REDIS_PORT", "6379"),
+		Password: getEnvOrDefault("REDIS_PASSWORD", ""),
+		DB:       0,
+	}
+
 	db, err := repository.NewPostgresDB(dbConfig)
 	if err != nil {
 		log.Fatalf("Failed to initialize db: %s", err.Error())
 	}
-
 	defer db.Close()
-
 	log.Println("Successfully connected to database")
 
-	controller := controller.NewController(db)
+	redisClient, err := cache.NewRedisClient(redisConfig)
+	if err != nil {
+		log.Fatalf("Failed to initialize Redis: %s", err.Error())
+	}
+	defer redisClient.Close()
+	log.Println("Successfully connected to Redis")
+
+	controller := controller.NewControllerWithRedis(db, redisClient)
 
 	srv := controller.GetServer()
 
