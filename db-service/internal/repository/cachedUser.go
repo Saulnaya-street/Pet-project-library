@@ -20,10 +20,10 @@ const (
 
 type CachedUserRepository struct {
 	repo        IUserRepository
-	redisClient *cache.RedisClient
+	redisClient cache.IRedisClient
 }
 
-func NewCachedUserRepository(repo IUserRepository, redisClient *cache.RedisClient) IUserRepository {
+func NewCachedUserRepository(repo IUserRepository, redisClient cache.IRedisClient) IUserRepository {
 	return &CachedUserRepository{
 		repo:        repo,
 		redisClient: redisClient,
@@ -43,7 +43,6 @@ func getEmailKey(email string) string {
 }
 
 func (r *CachedUserRepository) Create(user *domain.User) error {
-
 	err := r.repo.Create(user)
 	if err != nil {
 		return err
@@ -51,24 +50,24 @@ func (r *CachedUserRepository) Create(user *domain.User) error {
 
 	userJson, err := json.Marshal(user)
 	if err != nil {
-		return fmt.Errorf("ошибка при сериализации пользователя: %w", err)
+		return fmt.Errorf("error serializing user: %w", err)
 	}
 
 	ctx := context.Background()
 
 	err = r.redisClient.Set(ctx, getUserKey(user.ID), string(userJson), userCacheTTL)
 	if err != nil {
-		fmt.Printf("Ошибка при кешировании пользователя по ID: %v\n", err)
+		fmt.Printf("Error caching user by ID: %v\n", err)
 	}
 
 	err = r.redisClient.Set(ctx, getUsernameKey(user.Username), user.ID.String(), userCacheTTL)
 	if err != nil {
-		fmt.Printf("Ошибка при кешировании пользователя по имени: %v\n", err)
+		fmt.Printf("Error caching user by name: %v\n", err)
 	}
 
 	err = r.redisClient.Set(ctx, getEmailKey(user.Email), user.ID.String(), userCacheTTL)
 	if err != nil {
-		fmt.Printf("Ошибка при кешировании пользователя по email: %v\n", err)
+		fmt.Printf("Error caching user by email: %v\n", err)
 	}
 
 	r.redisClient.Delete(ctx, userListKey)
@@ -81,11 +80,9 @@ func (r *CachedUserRepository) GetByID(id uuid.UUID) (*domain.User, error) {
 
 	userKey := getUserKey(id)
 	cachedUser, err := r.redisClient.Get(ctx, userKey)
-	if err == nil && cachedUser != "" {
-
+	if err == nil {
 		var user domain.User
-		err = json.Unmarshal([]byte(cachedUser), &user)
-		if err == nil {
+		if err := json.Unmarshal([]byte(cachedUser), &user); err == nil {
 			return &user, nil
 		}
 	}
@@ -110,11 +107,9 @@ func (r *CachedUserRepository) GetByUsername(username string) (*domain.User, err
 
 	usernameKey := getUsernameKey(username)
 	userID, err := r.redisClient.Get(ctx, usernameKey)
-	if err == nil && userID != "" {
-
+	if err == nil {
 		id, err := uuid.Parse(userID)
 		if err == nil {
-
 			return r.GetByID(id)
 		}
 	}
@@ -139,8 +134,7 @@ func (r *CachedUserRepository) GetByEmail(email string) (*domain.User, error) {
 
 	emailKey := getEmailKey(email)
 	userID, err := r.redisClient.Get(ctx, emailKey)
-	if err == nil && userID != "" {
-
+	if err == nil {
 		id, err := uuid.Parse(userID)
 		if err == nil {
 			return r.GetByID(id)
@@ -167,7 +161,6 @@ func (r *CachedUserRepository) Update(user *domain.User) error {
 
 	oldUser, err := r.repo.GetByID(user.ID)
 	if err == nil {
-
 		if oldUser.Username != user.Username {
 			r.redisClient.Delete(ctx, getUsernameKey(oldUser.Username))
 		}
@@ -198,7 +191,6 @@ func (r *CachedUserRepository) Delete(id uuid.UUID) error {
 
 	user, err := r.repo.GetByID(id)
 	if err == nil {
-
 		r.redisClient.Delete(ctx, getUsernameKey(user.Username))
 		r.redisClient.Delete(ctx, getEmailKey(user.Email))
 	}
@@ -209,7 +201,6 @@ func (r *CachedUserRepository) Delete(id uuid.UUID) error {
 	}
 
 	r.redisClient.Delete(ctx, getUserKey(id))
-
 	r.redisClient.Delete(ctx, userListKey)
 
 	return nil
@@ -219,11 +210,9 @@ func (r *CachedUserRepository) GetAll() ([]domain.User, error) {
 	ctx := context.Background()
 
 	cachedList, err := r.redisClient.Get(ctx, userListKey)
-	if err == nil && cachedList != "" {
-
+	if err == nil {
 		var users []domain.User
-		err = json.Unmarshal([]byte(cachedList), &users)
-		if err == nil {
+		if err := json.Unmarshal([]byte(cachedList), &users); err == nil {
 			return users, nil
 		}
 	}

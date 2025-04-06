@@ -4,7 +4,7 @@ WORKDIR /app
 COPY go.mod ./
 
 
-RUN go get github.com/go-redis/redis/v8
+
 RUN go mod download && go mod tidy
 
 COPY . .

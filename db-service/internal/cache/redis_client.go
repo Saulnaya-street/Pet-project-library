@@ -15,11 +15,18 @@ type RedisConfig struct {
 	DB       int
 }
 
+type IRedisClient interface {
+	Close() error
+	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
+	Get(ctx context.Context, key string) (string, error)
+	Delete(ctx context.Context, key string) error
+}
+
 type RedisClient struct {
 	client *redis.Client
 }
 
-func NewRedisClient(cfg RedisConfig) (*RedisClient, error) {
+func NewRedisClient(cfg RedisConfig) (IRedisClient, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
 		Password: cfg.Password,
@@ -30,7 +37,7 @@ func NewRedisClient(cfg RedisConfig) (*RedisClient, error) {
 	defer cancel()
 
 	if err := client.Ping(ctx).Err(); err != nil {
-		return nil, fmt.Errorf("не удалось подключиться к Redis: %w", err)
+		return nil, fmt.Errorf("failed to connect to redis: %w", err)
 	}
 
 	return &RedisClient{
@@ -52,25 +59,4 @@ func (r *RedisClient) Get(ctx context.Context, key string) (string, error) {
 
 func (r *RedisClient) Delete(ctx context.Context, key string) error {
 	return r.client.Del(ctx, key).Err()
-}
-
-func (r *RedisClient) HashSet(ctx context.Context, key, field string, value interface{}) error {
-	return r.client.HSet(ctx, key, field, value).Err()
-}
-
-func (r *RedisClient) HashGet(ctx context.Context, key, field string) (string, error) {
-	return r.client.HGet(ctx, key, field).Result()
-}
-
-func (r *RedisClient) HashGetAll(ctx context.Context, key string) (map[string]string, error) {
-	return r.client.HGetAll(ctx, key).Result()
-}
-
-func (r *RedisClient) Exists(ctx context.Context, key string) (bool, error) {
-	res, err := r.client.Exists(ctx, key).Result()
-	return res > 0, err
-}
-
-func (r *RedisClient) FlushDB(ctx context.Context) error {
-	return r.client.FlushDB(ctx).Err()
 }

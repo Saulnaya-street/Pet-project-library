@@ -21,7 +21,6 @@ func getEnvOrDefault(key, defaultValue string) string {
 }
 
 func main() {
-
 	dbConfig := repository.Config{
 		Host:     getEnvOrDefault("DB_HOST", "db"),
 		Port:     getEnvOrDefault("DB_PORT", "5432"),
@@ -52,10 +51,13 @@ func main() {
 	defer redisClient.Close()
 	log.Println("Successfully connected to Redis")
 
-	controller := controller.NewControllerWithRedis(db, redisClient)
+	// Используем новый универсальный конструктор
+	ctrl := controller.NewController(controller.ControllerOptions{
+		DB:          db,
+		RedisClient: redisClient,
+	})
 
-	srv := controller.GetServer()
-
+	srv := ctrl.GetServer()
 	port := getEnvOrDefault("PORT", "8080")
 
 	go func() {
