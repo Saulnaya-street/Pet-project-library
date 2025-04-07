@@ -36,13 +36,8 @@ func getBookListKey(author, genre string) string {
 	return fmt.Sprintf("%s%s:%s", bookListKeyPrefix, author, genre)
 }
 
-func (r *CachedBookRepository) Create(book *domain.Book) error {
-	ctx := context.Background()
-	return r.CreateWithContext(ctx, book)
-}
-
-func (r *CachedBookRepository) CreateWithContext(ctx context.Context, book *domain.Book) error {
-	err := r.repo.Create(book)
+func (r *CachedBookRepository) Create(ctx context.Context, book *domain.Book) error {
+	err := r.repo.Create(ctx, book)
 	if err != nil {
 		return err
 	}
@@ -60,12 +55,7 @@ func (r *CachedBookRepository) CreateWithContext(ctx context.Context, book *doma
 	return nil
 }
 
-func (r *CachedBookRepository) GetByID(id uuid.UUID) (*domain.Book, error) {
-	ctx := context.Background()
-	return r.GetByIDWithContext(ctx, id)
-}
-
-func (r *CachedBookRepository) GetByIDWithContext(ctx context.Context, id uuid.UUID) (*domain.Book, error) {
+func (r *CachedBookRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Book, error) {
 	bookKey := getBookKey(id)
 	cachedBook, err := r.redisClient.Get(ctx, bookKey)
 
@@ -76,7 +66,7 @@ func (r *CachedBookRepository) GetByIDWithContext(ctx context.Context, id uuid.U
 		}
 	}
 
-	book, err := r.repo.GetByID(id)
+	book, err := r.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -89,12 +79,7 @@ func (r *CachedBookRepository) GetByIDWithContext(ctx context.Context, id uuid.U
 	return book, nil
 }
 
-func (r *CachedBookRepository) GetAll(author, genre string) ([]*domain.Book, error) {
-	ctx := context.Background()
-	return r.GetAllWithContext(ctx, author, genre)
-}
-
-func (r *CachedBookRepository) GetAllWithContext(ctx context.Context, author, genre string) ([]*domain.Book, error) {
+func (r *CachedBookRepository) GetAll(ctx context.Context, author, genre string) ([]*domain.Book, error) {
 	listKey := getBookListKey(author, genre)
 
 	cachedList, err := r.redisClient.Get(ctx, listKey)
@@ -106,7 +91,7 @@ func (r *CachedBookRepository) GetAllWithContext(ctx context.Context, author, ge
 		}
 	}
 
-	books, err := r.repo.GetAll(author, genre)
+	books, err := r.repo.GetAll(ctx, author, genre)
 	if err != nil {
 		return nil, err
 	}
@@ -119,13 +104,8 @@ func (r *CachedBookRepository) GetAllWithContext(ctx context.Context, author, ge
 	return books, nil
 }
 
-func (r *CachedBookRepository) Update(book *domain.Book) error {
-	ctx := context.Background()
-	return r.UpdateWithContext(ctx, book)
-}
-
-func (r *CachedBookRepository) UpdateWithContext(ctx context.Context, book *domain.Book) error {
-	err := r.repo.Update(book)
+func (r *CachedBookRepository) Update(ctx context.Context, book *domain.Book) error {
+	err := r.repo.Update(ctx, book)
 	if err != nil {
 		return err
 	}
@@ -137,13 +117,8 @@ func (r *CachedBookRepository) UpdateWithContext(ctx context.Context, book *doma
 	return nil
 }
 
-func (r *CachedBookRepository) Delete(id uuid.UUID) error {
-	ctx := context.Background()
-	return r.DeleteWithContext(ctx, id)
-}
-
-func (r *CachedBookRepository) DeleteWithContext(ctx context.Context, id uuid.UUID) error {
-	err := r.repo.Delete(id)
+func (r *CachedBookRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	err := r.repo.Delete(ctx, id)
 	if err != nil {
 		return err
 	}

@@ -29,7 +29,8 @@ func NewUserHandler(userService service.IUserService) IUserHandler {
 }
 
 func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := h.userService.GetAll()
+	ctx := r.Context()
+	users, err := h.userService.GetAll(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -40,13 +41,14 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	id, err := uuid.Parse(mux.Vars(r)["id"])
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
-	user, err := h.userService.GetByID(id)
+	user, err := h.userService.GetByID(ctx, id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -57,6 +59,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var userInput struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
@@ -75,7 +78,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		IsAdmin:  userInput.IsAdmin,
 	}
 
-	if err := h.userService.Create(user, userInput.Password); err != nil {
+	if err := h.userService.Create(ctx, user, userInput.Password); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -86,6 +89,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	id, err := uuid.Parse(mux.Vars(r)["id"])
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
@@ -104,7 +108,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentUser, err := h.userService.GetByID(id)
+	currentUser, err := h.userService.GetByID(ctx, id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -115,7 +119,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	currentUser.IsAdmin = userInput.IsAdmin
 
 	// Упрощаем логику обновления пароля
-	if err := h.userService.Update(currentUser, userInput.Password != "", userInput.Password); err != nil {
+	if err := h.userService.Update(ctx, currentUser, userInput.Password != "", userInput.Password); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -125,13 +129,14 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	id, err := uuid.Parse(mux.Vars(r)["id"])
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.userService.Delete(id); err != nil {
+	if err := h.userService.Delete(ctx, id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -140,6 +145,7 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var loginInput struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -150,7 +156,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.userService.Authenticate(loginInput.Username, loginInput.Password)
+	token, err := h.userService.Authenticate(ctx, loginInput.Username, loginInput.Password)
 	if err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
