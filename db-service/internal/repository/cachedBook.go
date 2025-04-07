@@ -37,6 +37,11 @@ func getBookListKey(author, genre string) string {
 }
 
 func (r *CachedBookRepository) Create(book *domain.Book) error {
+	ctx := context.Background()
+	return r.CreateWithContext(ctx, book)
+}
+
+func (r *CachedBookRepository) CreateWithContext(ctx context.Context, book *domain.Book) error {
 	err := r.repo.Create(book)
 	if err != nil {
 		return err
@@ -47,7 +52,6 @@ func (r *CachedBookRepository) Create(book *domain.Book) error {
 		return fmt.Errorf("error serializing book: %w", err)
 	}
 
-	ctx := context.Background()
 	err = r.redisClient.Set(ctx, getBookKey(book.ID), string(bookJson), cacheTTL)
 	if err != nil {
 		fmt.Printf("Error caching book: %v\n", err)
@@ -58,7 +62,10 @@ func (r *CachedBookRepository) Create(book *domain.Book) error {
 
 func (r *CachedBookRepository) GetByID(id uuid.UUID) (*domain.Book, error) {
 	ctx := context.Background()
+	return r.GetByIDWithContext(ctx, id)
+}
 
+func (r *CachedBookRepository) GetByIDWithContext(ctx context.Context, id uuid.UUID) (*domain.Book, error) {
 	bookKey := getBookKey(id)
 	cachedBook, err := r.redisClient.Get(ctx, bookKey)
 
@@ -84,7 +91,10 @@ func (r *CachedBookRepository) GetByID(id uuid.UUID) (*domain.Book, error) {
 
 func (r *CachedBookRepository) GetAll(author, genre string) ([]*domain.Book, error) {
 	ctx := context.Background()
+	return r.GetAllWithContext(ctx, author, genre)
+}
 
+func (r *CachedBookRepository) GetAllWithContext(ctx context.Context, author, genre string) ([]*domain.Book, error) {
 	listKey := getBookListKey(author, genre)
 
 	cachedList, err := r.redisClient.Get(ctx, listKey)
@@ -110,12 +120,15 @@ func (r *CachedBookRepository) GetAll(author, genre string) ([]*domain.Book, err
 }
 
 func (r *CachedBookRepository) Update(book *domain.Book) error {
+	ctx := context.Background()
+	return r.UpdateWithContext(ctx, book)
+}
+
+func (r *CachedBookRepository) UpdateWithContext(ctx context.Context, book *domain.Book) error {
 	err := r.repo.Update(book)
 	if err != nil {
 		return err
 	}
-
-	ctx := context.Background()
 
 	bookJson, err := json.Marshal(book)
 	if err == nil {
@@ -125,12 +138,16 @@ func (r *CachedBookRepository) Update(book *domain.Book) error {
 }
 
 func (r *CachedBookRepository) Delete(id uuid.UUID) error {
+	ctx := context.Background()
+	return r.DeleteWithContext(ctx, id)
+}
+
+func (r *CachedBookRepository) DeleteWithContext(ctx context.Context, id uuid.UUID) error {
 	err := r.repo.Delete(id)
 	if err != nil {
 		return err
 	}
 
-	ctx := context.Background()
 	r.redisClient.Delete(ctx, getBookKey(id))
 
 	return nil

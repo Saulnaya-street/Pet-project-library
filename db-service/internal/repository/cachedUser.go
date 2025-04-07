@@ -43,6 +43,12 @@ func getEmailKey(email string) string {
 }
 
 func (r *CachedUserRepository) Create(user *domain.User) error {
+
+	ctx := context.Background()
+	return r.CreateWithContext(ctx, user)
+}
+
+func (r *CachedUserRepository) CreateWithContext(ctx context.Context, user *domain.User) error {
 	err := r.repo.Create(user)
 	if err != nil {
 		return err
@@ -52,8 +58,6 @@ func (r *CachedUserRepository) Create(user *domain.User) error {
 	if err != nil {
 		return fmt.Errorf("error serializing user: %w", err)
 	}
-
-	ctx := context.Background()
 
 	err = r.redisClient.Set(ctx, getUserKey(user.ID), string(userJson), userCacheTTL)
 	if err != nil {
@@ -77,9 +81,13 @@ func (r *CachedUserRepository) Create(user *domain.User) error {
 
 func (r *CachedUserRepository) GetByID(id uuid.UUID) (*domain.User, error) {
 	ctx := context.Background()
+	return r.GetByIDWithContext(ctx, id)
+}
 
+func (r *CachedUserRepository) GetByIDWithContext(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	userKey := getUserKey(id)
 	cachedUser, err := r.redisClient.Get(ctx, userKey)
+
 	if err == nil {
 		var user domain.User
 		if err := json.Unmarshal([]byte(cachedUser), &user); err == nil {
@@ -103,14 +111,19 @@ func (r *CachedUserRepository) GetByID(id uuid.UUID) (*domain.User, error) {
 }
 
 func (r *CachedUserRepository) GetByUsername(username string) (*domain.User, error) {
-	ctx := context.Background()
 
+	ctx := context.Background()
+	return r.GetByUsernameWithContext(ctx, username)
+}
+
+func (r *CachedUserRepository) GetByUsernameWithContext(ctx context.Context, username string) (*domain.User, error) {
 	usernameKey := getUsernameKey(username)
 	userID, err := r.redisClient.Get(ctx, usernameKey)
+
 	if err == nil {
 		id, err := uuid.Parse(userID)
 		if err == nil {
-			return r.GetByID(id)
+			return r.GetByIDWithContext(ctx, id)
 		}
 	}
 
@@ -130,14 +143,19 @@ func (r *CachedUserRepository) GetByUsername(username string) (*domain.User, err
 }
 
 func (r *CachedUserRepository) GetByEmail(email string) (*domain.User, error) {
-	ctx := context.Background()
 
+	ctx := context.Background()
+	return r.GetByEmailWithContext(ctx, email)
+}
+
+func (r *CachedUserRepository) GetByEmailWithContext(ctx context.Context, email string) (*domain.User, error) {
 	emailKey := getEmailKey(email)
 	userID, err := r.redisClient.Get(ctx, emailKey)
+
 	if err == nil {
 		id, err := uuid.Parse(userID)
 		if err == nil {
-			return r.GetByID(id)
+			return r.GetByIDWithContext(ctx, id)
 		}
 	}
 
@@ -157,8 +175,12 @@ func (r *CachedUserRepository) GetByEmail(email string) (*domain.User, error) {
 }
 
 func (r *CachedUserRepository) Update(user *domain.User) error {
+	// Используем контекст как аргумент в вызывающем коде
 	ctx := context.Background()
+	return r.UpdateWithContext(ctx, user)
+}
 
+func (r *CachedUserRepository) UpdateWithContext(ctx context.Context, user *domain.User) error {
 	oldUser, err := r.repo.GetByID(user.ID)
 	if err == nil {
 		if oldUser.Username != user.Username {
@@ -187,8 +209,12 @@ func (r *CachedUserRepository) Update(user *domain.User) error {
 }
 
 func (r *CachedUserRepository) Delete(id uuid.UUID) error {
-	ctx := context.Background()
 
+	ctx := context.Background()
+	return r.DeleteWithContext(ctx, id)
+}
+
+func (r *CachedUserRepository) DeleteWithContext(ctx context.Context, id uuid.UUID) error {
 	user, err := r.repo.GetByID(id)
 	if err == nil {
 		r.redisClient.Delete(ctx, getUsernameKey(user.Username))
@@ -207,9 +233,14 @@ func (r *CachedUserRepository) Delete(id uuid.UUID) error {
 }
 
 func (r *CachedUserRepository) GetAll() ([]domain.User, error) {
-	ctx := context.Background()
 
+	ctx := context.Background()
+	return r.GetAllWithContext(ctx)
+}
+
+func (r *CachedUserRepository) GetAllWithContext(ctx context.Context) ([]domain.User, error) {
 	cachedList, err := r.redisClient.Get(ctx, userListKey)
+
 	if err == nil {
 		var users []domain.User
 		if err := json.Unmarshal([]byte(cachedList), &users); err == nil {
