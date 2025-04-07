@@ -201,7 +201,6 @@ func (r *CachedUserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 func (r *CachedUserRepository) GetAll(ctx context.Context) ([]domain.User, error) {
 	cachedList, err := r.redisClient.Get(ctx, userListKey)
 
-	// Проверка err == nil и err != nil
 	if err == nil {
 		var users []domain.User
 		if err := json.Unmarshal([]byte(cachedList), &users); err == nil {

@@ -6,16 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="9f155384-ebbc-4224-9530-31bbbcebc850" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/cmd/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db-service/internal/delivery/handler/book.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/delivery/handler/book.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db-service/internal/delivery/handler/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/delivery/handler/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db-service/internal/repository/book.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/repository/book.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db-service/internal/repository/cachedBook.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/repository/cachedBook.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db-service/internal/repository/cachedUser.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/repository/cachedUser.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db-service/internal/repository/interfaces.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/repository/interfaces.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db-service/internal/repository/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/repository/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db-service/internal/service/book.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/service/book.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db-service/internal/service/interfaces.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/service/interfaces.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db-service/internal/service/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/service/user.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

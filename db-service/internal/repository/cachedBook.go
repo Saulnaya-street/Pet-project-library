@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"time"
 )
@@ -63,7 +64,11 @@ func (r *CachedBookRepository) GetByID(ctx context.Context, id uuid.UUID) (*doma
 		var book domain.Book
 		if err := json.Unmarshal([]byte(cachedBook), &book); err == nil {
 			return &book, nil
+		} else {
+			fmt.Printf("Error unmarshaling cached book: %v\n", err)
 		}
+	} else if err != redis.Nil {
+		fmt.Printf("Error fetching book from Redis: %v\n", err)
 	}
 
 	book, err := r.repo.GetByID(ctx, id)
@@ -73,7 +78,11 @@ func (r *CachedBookRepository) GetByID(ctx context.Context, id uuid.UUID) (*doma
 
 	bookJson, err := json.Marshal(book)
 	if err == nil {
-		r.redisClient.Set(ctx, bookKey, string(bookJson), cacheTTL)
+		if redisErr := r.redisClient.Set(ctx, bookKey, string(bookJson), cacheTTL); redisErr != nil {
+			fmt.Printf("Error caching book data: %v\n", redisErr)
+		}
+	} else {
+		fmt.Printf("Error serializing book for cache: %v\n", err)
 	}
 
 	return book, nil
@@ -86,9 +95,13 @@ func (r *CachedBookRepository) GetAll(ctx context.Context, author, genre string)
 
 	if err == nil {
 		var books []*domain.Book
-		if err := json.Unmarshal([]byte(cachedList), &books); err == nil {
+		if unmarshalErr := json.Unmarshal([]byte(cachedList), &books); unmarshalErr == nil {
 			return books, nil
+		} else {
+			fmt.Printf("Error deserializing book list from cache: %v\n", unmarshalErr)
 		}
+	} else if err != redis.Nil {
+		fmt.Printf("Error getting list of books from Redis: %v\n", err)
 	}
 
 	books, err := r.repo.GetAll(ctx, author, genre)
@@ -98,22 +111,35 @@ func (r *CachedBookRepository) GetAll(ctx context.Context, author, genre string)
 
 	booksJson, err := json.Marshal(books)
 	if err == nil {
-		r.redisClient.Set(ctx, listKey, string(booksJson), cacheTTL)
+		if redisErr := r.redisClient.Set(ctx, listKey, string(booksJson), cacheTTL); redisErr != nil {
+			fmt.Printf("Book list caching error: %v\n", redisErr)
+		}
+	} else {
+		fmt.Printf("Error serializing book list for cache: %v\n", err)
 	}
 
 	return books, nil
 }
 
 func (r *CachedBookRepository) Update(ctx context.Context, book *domain.Book) error {
+
 	err := r.repo.Update(ctx, book)
 	if err != nil {
 		return err
 	}
 
-	bookJson, err := json.Marshal(book)
-	if err == nil {
-		r.redisClient.Set(ctx, getBookKey(book.ID), string(bookJson), cacheTTL)
+	bookJson, marshalErr := json.Marshal(book)
+	if marshalErr != nil {
+		fmt.Printf("Error serializing book to update cache: %v\n", marshalErr)
+		return nil
 	}
+
+	if redisErr := r.redisClient.Set(ctx, getBookKey(book.ID), string(bookJson), cacheTTL); redisErr != nil {
+		if redisErr != redis.Nil {
+			fmt.Printf("Error updating book in cache: %v\n", redisErr)
+		}
+	}
+
 	return nil
 }
 
@@ -123,7 +149,11 @@ func (r *CachedBookRepository) Delete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
-	r.redisClient.Delete(ctx, getBookKey(id))
+	if redisErr := r.redisClient.Delete(ctx, getBookKey(id)); redisErr != nil {
+		if redisErr != redis.Nil {
+			fmt.Printf("Error deleting book from cache: %v\n", redisErr)
+		}
+	}
 
 	return nil
 }
