@@ -29,7 +29,7 @@ func NewUserHandler(userService service.IUserService) IUserHandler {
 }
 
 func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := h.userService.GetAll()
+	users, err := h.userService.GetAll(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -46,7 +46,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.userService.GetByID(id)
+	user, err := h.userService.GetByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -75,7 +75,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		IsAdmin:  userInput.IsAdmin,
 	}
 
-	if err := h.userService.Create(user, userInput.Password); err != nil {
+	if err := h.userService.Create(r.Context(), user, userInput.Password); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -104,7 +104,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentUser, err := h.userService.GetByID(id)
+	currentUser, err := h.userService.GetByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -114,8 +114,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	currentUser.Email = userInput.Email
 	currentUser.IsAdmin = userInput.IsAdmin
 
-	// Упрощаем логику обновления пароля
-	if err := h.userService.Update(currentUser, userInput.Password != "", userInput.Password); err != nil {
+	if err := h.userService.Update(r.Context(), currentUser, userInput.Password != "", userInput.Password); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -131,7 +130,7 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.userService.Delete(id); err != nil {
+	if err := h.userService.Delete(r.Context(), id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -150,7 +149,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.userService.Authenticate(loginInput.Username, loginInput.Password)
+	token, err := h.userService.Authenticate(r.Context(), loginInput.Username, loginInput.Password)
 	if err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return

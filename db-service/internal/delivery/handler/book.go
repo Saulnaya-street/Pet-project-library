@@ -31,7 +31,7 @@ func (h *BookHandler) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 	author := r.URL.Query().Get("author")
 	genre := r.URL.Query().Get("genre")
 
-	books, err := h.bookService.GetAll(author, genre)
+	books, err := h.bookService.GetAll(r.Context(), author, genre)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -49,7 +49,7 @@ func (h *BookHandler) GetBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	book, err := h.bookService.GetByID(id)
+	book, err := h.bookService.GetByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -66,7 +66,7 @@ func (h *BookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.bookService.Create(&book); err != nil {
+	if err := h.bookService.Create(r.Context(), &book); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -92,7 +92,7 @@ func (h *BookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 
 	book.ID = id
 
-	if err := h.bookService.Update(&book); err != nil {
+	if err := h.bookService.Update(r.Context(), &book); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -109,7 +109,7 @@ func (h *BookHandler) DeleteBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.bookService.Delete(id); err != nil {
+	if err := h.bookService.Delete(r.Context(), id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

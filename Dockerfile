@@ -3,6 +3,8 @@ WORKDIR /app
 
 COPY go.mod ./
 
+
+
 RUN go mod download && go mod tidy
 
 COPY . .
@@ -10,8 +12,6 @@ COPY . .
 RUN ls -la /app
 
 
-
-# Исправленный путь к main.go
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o main ./db-service/cmd/main.go > /tmp/build.log 2>&1 || (cat /tmp/build.log && false)
 
 FROM golang:1.23-alpine
