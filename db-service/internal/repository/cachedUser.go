@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"time"
 )
@@ -81,7 +82,11 @@ func (r *CachedUserRepository) GetByID(ctx context.Context, id uuid.UUID) (*doma
 		var user domain.User
 		if err := json.Unmarshal([]byte(cachedUser), &user); err == nil {
 			return &user, nil
+		} else {
+			fmt.Printf("Error unmarshaling cached user: %v\n", err)
 		}
+	} else if err != redis.Nil {
+		fmt.Printf("Error fetching user from Redis: %v\n", err)
 	}
 
 	user, err := r.repo.GetByID(ctx, id)
@@ -108,6 +113,8 @@ func (r *CachedUserRepository) GetByUsername(ctx context.Context, username strin
 		if err == nil {
 			return r.GetByID(ctx, id)
 		}
+	} else if err != redis.Nil {
+		fmt.Printf("Error fetching user by username from Redis: %v\n", err)
 	}
 
 	user, err := r.repo.GetByUsername(ctx, username)
@@ -129,12 +136,13 @@ func (r *CachedUserRepository) GetByEmail(ctx context.Context, email string) (*d
 	emailKey := getEmailKey(email)
 	userID, err := r.redisClient.Get(ctx, emailKey)
 
-	// Проверка err == nil и err != nil
 	if err == nil {
 		id, err := uuid.Parse(userID)
 		if err == nil {
 			return r.GetByID(ctx, id)
 		}
+	} else if err != redis.Nil {
+		fmt.Printf("Error fetching user by email from Redis: %v\n", err)
 	}
 
 	user, err := r.repo.GetByEmail(ctx, email)
@@ -203,9 +211,13 @@ func (r *CachedUserRepository) GetAll(ctx context.Context) ([]domain.User, error
 
 	if err == nil {
 		var users []domain.User
-		if err := json.Unmarshal([]byte(cachedList), &users); err == nil {
+		if unmarshalErr := json.Unmarshal([]byte(cachedList), &users); unmarshalErr == nil {
 			return users, nil
+		} else {
+			fmt.Printf("Error deserializing user list from cache: %v\n", unmarshalErr)
 		}
+	} else if err != redis.Nil {
+		fmt.Printf("Error fetching users list from Redis: %v\n", err)
 	}
 
 	users, err := r.repo.GetAll(ctx)

@@ -77,12 +77,14 @@ func (r *CachedBookRepository) GetByID(ctx context.Context, id uuid.UUID) (*doma
 	}
 
 	bookJson, err := json.Marshal(book)
-	if err == nil {
-		if redisErr := r.redisClient.Set(ctx, bookKey, string(bookJson), cacheTTL); redisErr != nil {
-			fmt.Printf("Error caching book data: %v\n", redisErr)
-		}
-	} else {
+	if err != nil {
 		fmt.Printf("Error serializing book for cache: %v\n", err)
+		return book, nil
+	}
+
+	redisErr := r.redisClient.Set(ctx, bookKey, string(bookJson), cacheTTL)
+	if redisErr != nil {
+		fmt.Printf("Error caching book data: %v\n", redisErr)
 	}
 
 	return book, nil
@@ -110,34 +112,34 @@ func (r *CachedBookRepository) GetAll(ctx context.Context, author, genre string)
 	}
 
 	booksJson, err := json.Marshal(books)
-	if err == nil {
-		if redisErr := r.redisClient.Set(ctx, listKey, string(booksJson), cacheTTL); redisErr != nil {
-			fmt.Printf("Book list caching error: %v\n", redisErr)
-		}
-	} else {
+	if err != nil {
 		fmt.Printf("Error serializing book list for cache: %v\n", err)
+		return books, nil
+	}
+
+	redisErr := r.redisClient.Set(ctx, listKey, string(booksJson), cacheTTL)
+	if redisErr != nil {
+		fmt.Printf("Book list caching error: %v\n", redisErr)
 	}
 
 	return books, nil
 }
 
 func (r *CachedBookRepository) Update(ctx context.Context, book *domain.Book) error {
-
 	err := r.repo.Update(ctx, book)
 	if err != nil {
 		return err
 	}
 
-	bookJson, marshalErr := json.Marshal(book)
-	if marshalErr != nil {
-		fmt.Printf("Error serializing book to update cache: %v\n", marshalErr)
+	bookJson, err := json.Marshal(book)
+	if err != nil {
+		fmt.Printf("Error serializing book to update cache: %v\n", err)
 		return nil
 	}
 
-	if redisErr := r.redisClient.Set(ctx, getBookKey(book.ID), string(bookJson), cacheTTL); redisErr != nil {
-		if redisErr != redis.Nil {
-			fmt.Printf("Error updating book in cache: %v\n", redisErr)
-		}
+	redisErr := r.redisClient.Set(ctx, getBookKey(book.ID), string(bookJson), cacheTTL)
+	if redisErr != nil {
+		fmt.Printf("Error updating book in cache: %v\n", redisErr)
 	}
 
 	return nil
@@ -149,10 +151,9 @@ func (r *CachedBookRepository) Delete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
-	if redisErr := r.redisClient.Delete(ctx, getBookKey(id)); redisErr != nil {
-		if redisErr != redis.Nil {
-			fmt.Printf("Error deleting book from cache: %v\n", redisErr)
-		}
+	redisErr := r.redisClient.Delete(ctx, getBookKey(id))
+	if redisErr != nil {
+		fmt.Printf("Error deleting book from cache: %v\n", redisErr)
 	}
 
 	return nil
