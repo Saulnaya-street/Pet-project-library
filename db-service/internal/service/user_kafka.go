@@ -35,7 +35,7 @@ func (s *UserServiceWithKafka) Create(ctx context.Context, user *domain.User, pa
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return fmt.Errorf("ошибка при хешировании пароля: %w", err)
+		return fmt.Errorf("error hashing password: %w", err)
 	}
 
 	user.PasswordHash = string(hashedPassword)
@@ -46,9 +46,9 @@ func (s *UserServiceWithKafka) Create(ctx context.Context, user *domain.User, pa
 
 	if err := s.eventProducer.PublishUserCreated(ctx, user); err != nil {
 
-		log.Printf("Ошибка публикации события создания пользователя: %v", err)
+		log.Printf("Error publishing user creation event: %v", err)
 	} else {
-		log.Printf("Опубликовано событие создания пользователя: %s (%s)", user.Username, user.ID)
+		log.Printf("User creation event published: %s (%s)", user.Username, user.ID)
 	}
 
 	return nil
@@ -58,13 +58,13 @@ func (s *UserServiceWithKafka) Update(ctx context.Context, user *domain.User, pa
 
 	currentUser, err := s.repo.GetByID(ctx, user.ID)
 	if err != nil {
-		return fmt.Errorf("пользователь для обновления не найден: %w", err)
+		return fmt.Errorf("user not found for update: %w", err)
 	}
 
 	if passwordChanged {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 		if err != nil {
-			return fmt.Errorf("ошибка при хешировании пароля: %w", err)
+			return fmt.Errorf("error hashing password: %w", err)
 		}
 		user.PasswordHash = string(hashedPassword)
 	} else {
@@ -78,9 +78,9 @@ func (s *UserServiceWithKafka) Update(ctx context.Context, user *domain.User, pa
 
 	if err := s.eventProducer.PublishUserUpdated(ctx, user); err != nil {
 
-		log.Printf("Ошибка публикации события обновления пользователя: %v", err)
+		log.Printf("Error publishing user update event: %v", err)
 	} else {
-		log.Printf("Опубликовано событие обновления пользователя: %s (%s)", user.Username, user.ID)
+		log.Printf("User update event published: %s (%s)", user.Username, user.ID)
 	}
 
 	return nil
@@ -90,7 +90,7 @@ func (s *UserServiceWithKafka) Delete(ctx context.Context, id uuid.UUID) error {
 
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
-		return fmt.Errorf("пользователь для удаления не найден: %w", err)
+		return fmt.Errorf("user to delete not found: %w", err)
 	}
 
 	if err := s.repo.Delete(ctx, id); err != nil {
@@ -99,9 +99,9 @@ func (s *UserServiceWithKafka) Delete(ctx context.Context, id uuid.UUID) error {
 
 	if err := s.eventProducer.PublishUserDeleted(ctx, id); err != nil {
 
-		log.Printf("Ошибка публикации события удаления пользователя: %v", err)
+		log.Printf("Error publishing user deletion event: %v", err)
 	} else {
-		log.Printf("Опубликовано событие удаления пользователя: %s (%s)", user.Username, id)
+		log.Printf("User deletion event published: %s (%s)", user.Username, id)
 	}
 
 	return nil
@@ -110,18 +110,18 @@ func (s *UserServiceWithKafka) Delete(ctx context.Context, id uuid.UUID) error {
 func (s *UserServiceWithKafka) Authenticate(ctx context.Context, username, password string) (string, error) {
 	user, err := s.repo.GetByUsername(ctx, username)
 	if err != nil {
-		return "", errors.New("неверные учетные данные")
+		return "", errors.New("Invalid credentials")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return "", errors.New("неверные учетные данные")
+		return "", errors.New("Invalid credentials")
 	}
 
 	if err := s.eventProducer.PublishUserLoggedIn(ctx, user.ID, user.Username); err != nil {
 
-		log.Printf("Ошибка публикации события входа пользователя: %v", err)
+		log.Printf("Error publishing user login event: %v", err)
 	} else {
-		log.Printf("Опубликовано событие входа пользователя: %s (%s)", user.Username, user.ID)
+		log.Printf("User login event published: %s (%s)", user.Username, user.ID)
 	}
 
 	return user.ID.String(), nil
@@ -130,7 +130,7 @@ func (s *UserServiceWithKafka) Authenticate(ctx context.Context, username, passw
 func (s *UserServiceWithKafka) IsAdmin(ctx context.Context, id uuid.UUID) (bool, error) {
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
-		return false, fmt.Errorf("ошибка при проверке прав администратора: %w", err)
+		return false, fmt.Errorf("error checking administrator rights: %w", err)
 	}
 
 	return user.IsAdmin, nil

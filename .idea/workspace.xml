@@ -5,18 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9f155384-ebbc-4224-9530-31bbbcebc850" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/db-service/internal/kafka/event.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/kafka/event_consumer.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/kafka/event_producer.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/kafka/kafka_client.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/service/bookKafka.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db-service/internal/service/userKafka.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db-service/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/cmd/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db-service/internal/controller/controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/controller/controller.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/delivery/handler/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/delivery/handler/router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/repository/cachedBook.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/repository/cached_book.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/repository/cachedUser.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/repository/cached_user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/service/bookKafka.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/service/book_kafka.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db-service/internal/service/userKafka.go" beforeDir="false" afterPath="$PROJECT_DIR$/db-service/internal/service/user_kafka.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,7 +53,7 @@
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "git-widget-placeholder": "add-redis-caching",
+    "git-widget-placeholder": "feature-kafka",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
     "last_opened_file_path": "C:/Users/soaso",

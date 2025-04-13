@@ -41,9 +41,9 @@ func (s *BookServiceWithKafka) Create(ctx context.Context, book *domain.Book) er
 
 	if err := s.eventProducer.PublishBookCreated(ctx, book); err != nil {
 
-		log.Printf("Ошибка публикации события создания книги: %v", err)
+		log.Printf("Error publishing book creation event: %v", err)
 	} else {
-		log.Printf("Опубликовано событие создания книги: %s (%s)", book.Name, book.ID)
+		log.Printf("Book creation event published: %s (%s)", book.Name, book.ID)
 	}
 
 	return nil
@@ -53,7 +53,7 @@ func (s *BookServiceWithKafka) Update(ctx context.Context, book *domain.Book) er
 
 	_, err := s.bookRepo.GetByID(ctx, book.ID)
 	if err != nil {
-		return fmt.Errorf("книга для обновления не найдена: %w", err)
+		return fmt.Errorf("Book for update not found: %w", err)
 	}
 
 	if err := s.bookRepo.Update(ctx, book); err != nil {
@@ -62,9 +62,9 @@ func (s *BookServiceWithKafka) Update(ctx context.Context, book *domain.Book) er
 
 	if err := s.eventProducer.PublishBookUpdated(ctx, book); err != nil {
 
-		log.Printf("Ошибка публикации события обновления книги: %v", err)
+		log.Printf("Error publishing book update event: %v", err)
 	} else {
-		log.Printf("Опубликовано событие обновления книги: %s (%s)", book.Name, book.ID)
+		log.Printf("Book update event published: %s (%s)", book.Name, book.ID)
 	}
 
 	return nil
@@ -74,7 +74,7 @@ func (s *BookServiceWithKafka) Delete(ctx context.Context, id uuid.UUID) error {
 
 	book, err := s.bookRepo.GetByID(ctx, id)
 	if err != nil {
-		return fmt.Errorf("книга для удаления не найдена: %w", err)
+		return fmt.Errorf("book to delete not found: %w", err)
 	}
 
 	if err := s.bookRepo.Delete(ctx, id); err != nil {
@@ -83,9 +83,9 @@ func (s *BookServiceWithKafka) Delete(ctx context.Context, id uuid.UUID) error {
 
 	if err := s.eventProducer.PublishBookDeleted(ctx, id); err != nil {
 
-		log.Printf("Ошибка публикации события удаления книги: %v", err)
+		log.Printf("Error publishing book deletion event: %v", err)
 	} else {
-		log.Printf("Опубликовано событие удаления книги: %s (%s)", book.Name, id)
+		log.Printf("Book deletion event published: %s (%s)", book.Name, id)
 	}
 
 	return nil
