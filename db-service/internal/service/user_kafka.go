@@ -12,23 +12,27 @@ import (
 	"log"
 )
 
-type UserServiceWithKafka struct {
+type UserServiceImpl struct {
 	repo          repository.IUserRepository
 	eventProducer kafka.IEventProducer
 }
 
-func NewUserServiceWithKafka(repo repository.IUserRepository, eventProducer kafka.IEventProducer) IUserService {
-	return &UserServiceWithKafka{
+func UserService(repo repository.IUserRepository, eventProducer kafka.IEventProducer) IUserService {
+	return &UserServiceImpl{
 		repo:          repo,
 		eventProducer: eventProducer,
 	}
 }
 
-func (s *UserServiceWithKafka) GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
-	return s.repo.GetByID(ctx, id)
+func (s *UserServiceImpl) GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+	user, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("error getting user by ID: %w", err)
+	}
+	return user, nil
 }
 
-func (s *UserServiceWithKafka) Create(ctx context.Context, user *domain.User, password string) error {
+func (s *UserServiceImpl) Create(ctx context.Context, user *domain.User, password string) error {
 	if user.ID == uuid.Nil {
 		user.ID = uuid.New()
 	}
@@ -41,11 +45,10 @@ func (s *UserServiceWithKafka) Create(ctx context.Context, user *domain.User, pa
 	user.PasswordHash = string(hashedPassword)
 
 	if err := s.repo.Create(ctx, user); err != nil {
-		return err
+		return fmt.Errorf("error creating user: %w", err)
 	}
 
 	if err := s.eventProducer.PublishUserCreated(ctx, user); err != nil {
-
 		log.Printf("Error publishing user creation event: %v", err)
 	} else {
 		log.Printf("User creation event published: %s (%s)", user.Username, user.ID)
@@ -54,7 +57,7 @@ func (s *UserServiceWithKafka) Create(ctx context.Context, user *domain.User, pa
 	return nil
 }
 
-func (s *UserServiceWithKafka) Update(ctx context.Context, user *domain.User, passwordChanged bool, newPassword string) error {
+func (s *UserServiceImpl) Update(ctx context.Context, user *domain.User, passwordChanged bool, newPassword string) error {
 
 	currentUser, err := s.repo.GetByID(ctx, user.ID)
 	if err != nil {
@@ -68,16 +71,14 @@ func (s *UserServiceWithKafka) Update(ctx context.Context, user *domain.User, pa
 		}
 		user.PasswordHash = string(hashedPassword)
 	} else {
-
 		user.PasswordHash = currentUser.PasswordHash
 	}
 
 	if err := s.repo.Update(ctx, user); err != nil {
-		return err
+		return fmt.Errorf("error updating user: %w", err)
 	}
 
 	if err := s.eventProducer.PublishUserUpdated(ctx, user); err != nil {
-
 		log.Printf("Error publishing user update event: %v", err)
 	} else {
 		log.Printf("User update event published: %s (%s)", user.Username, user.ID)
@@ -86,7 +87,7 @@ func (s *UserServiceWithKafka) Update(ctx context.Context, user *domain.User, pa
 	return nil
 }
 
-func (s *UserServiceWithKafka) Delete(ctx context.Context, id uuid.UUID) error {
+func (s *UserServiceImpl) Delete(ctx context.Context, id uuid.UUID) error {
 
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
@@ -94,11 +95,10 @@ func (s *UserServiceWithKafka) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	if err := s.repo.Delete(ctx, id); err != nil {
-		return err
+		return fmt.Errorf("error deleting user: %w", err)
 	}
 
 	if err := s.eventProducer.PublishUserDeleted(ctx, id); err != nil {
-
 		log.Printf("Error publishing user deletion event: %v", err)
 	} else {
 		log.Printf("User deletion event published: %s (%s)", user.Username, id)
@@ -107,7 +107,7 @@ func (s *UserServiceWithKafka) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (s *UserServiceWithKafka) Authenticate(ctx context.Context, username, password string) (string, error) {
+func (s *UserServiceImpl) Authenticate(ctx context.Context, username, password string) (string, error) {
 	user, err := s.repo.GetByUsername(ctx, username)
 	if err != nil {
 		return "", errors.New("Invalid credentials")
@@ -118,7 +118,6 @@ func (s *UserServiceWithKafka) Authenticate(ctx context.Context, username, passw
 	}
 
 	if err := s.eventProducer.PublishUserLoggedIn(ctx, user.ID, user.Username); err != nil {
-
 		log.Printf("Error publishing user login event: %v", err)
 	} else {
 		log.Printf("User login event published: %s (%s)", user.Username, user.ID)
@@ -127,7 +126,7 @@ func (s *UserServiceWithKafka) Authenticate(ctx context.Context, username, passw
 	return user.ID.String(), nil
 }
 
-func (s *UserServiceWithKafka) IsAdmin(ctx context.Context, id uuid.UUID) (bool, error) {
+func (s *UserServiceImpl) IsAdmin(ctx context.Context, id uuid.UUID) (bool, error) {
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return false, fmt.Errorf("error checking administrator rights: %w", err)
@@ -136,6 +135,10 @@ func (s *UserServiceWithKafka) IsAdmin(ctx context.Context, id uuid.UUID) (bool,
 	return user.IsAdmin, nil
 }
 
-func (s *UserServiceWithKafka) GetAll(ctx context.Context) ([]domain.User, error) {
-	return s.repo.GetAll(ctx)
+func (s *UserServiceImpl) GetAll(ctx context.Context) ([]domain.User, error) {
+	users, err := s.repo.GetAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error getting list of users: %w", err)
+	}
+	return users, nil
 }

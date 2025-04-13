@@ -11,13 +11,11 @@ import (
 	"strings"
 )
 
-// BookRepositoryImpl - реализация репозитория книг
 type BookRepositoryImpl struct {
 	db *pgxpool.Pool
 }
 
-// NewBookRepository - конструктор репозитория книг
-func NewBookRepository(db *pgxpool.Pool) IBookRepository {
+func BookRepo(db *pgxpool.Pool) IBookRepository {
 	return &BookRepositoryImpl{
 		db: db,
 	}
@@ -32,7 +30,7 @@ func (r *BookRepositoryImpl) Create(ctx context.Context, book *domain.Book) erro
 	_, err := r.db.Exec(ctx, query,
 		book.ID, book.Genre, book.Name, book.Author, book.Year)
 	if err != nil {
-		return fmt.Errorf("ошибка при создании книги: %w", err)
+		return fmt.Errorf("error creating book: %w", err)
 	}
 	return nil
 }
@@ -45,9 +43,9 @@ func (r *BookRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*domain
 		&book.ID, &book.Genre, &book.Name, &book.Author, &book.Year)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("книга с ID %s не найдена", id)
+			return nil, fmt.Errorf("book with ID %s not found", id)
 		}
-		return nil, fmt.Errorf("ошибка при запросе книги с ID %s: %w", id, err)
+		return nil, fmt.Errorf("error requesting book with ID %s: %w", id, err)
 	}
 
 	return &book, nil
@@ -78,7 +76,7 @@ func (r *BookRepositoryImpl) GetAll(ctx context.Context, author, genre string) (
 
 	rows, err := r.db.Query(ctx, query, params...)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка при выполнении запроса GetAll: %w", err)
+		return nil, fmt.Errorf("error while executing GetAll request: %w", err)
 	}
 	defer rows.Close()
 
@@ -86,13 +84,13 @@ func (r *BookRepositoryImpl) GetAll(ctx context.Context, author, genre string) (
 		var book domain.Book
 		err := rows.Scan(&book.ID, &book.Genre, &book.Name, &book.Author, &book.Year)
 		if err != nil {
-			return nil, fmt.Errorf("ошибка при сканировании результатов: %w", err)
+			return nil, fmt.Errorf("error scanning results: %w", err)
 		}
 		books = append(books, &book)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("ошибка при обработке результатов: %w", err)
+		return nil, fmt.Errorf("error when processing results: %w", err)
 	}
 
 	return books, nil
@@ -103,7 +101,7 @@ func (r *BookRepositoryImpl) Update(ctx context.Context, book *domain.Book) erro
 	_, err := r.db.Exec(ctx, query,
 		book.Genre, book.Name, book.Author, book.Year, book.ID)
 	if err != nil {
-		return fmt.Errorf("ошибка при обновлении книги с ID %s: %w", book.ID, err)
+		return fmt.Errorf("error updating book with ID %s: %w", book.ID, err)
 	}
 	return nil
 }
@@ -112,7 +110,7 @@ func (r *BookRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM books WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id)
 	if err != nil {
-		return fmt.Errorf("ошибка при удалении книги с ID %s: %w", id, err)
+		return fmt.Errorf("error deleting book with ID %s: %w", id, err)
 	}
 	return nil
 }

@@ -3,6 +3,7 @@ package kafka
 import (
 	"awesomeProject22/db-service/internal/domain"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -52,5 +53,9 @@ type LoginEvent struct {
 }
 
 func (e *Event) Serialize() ([]byte, error) {
-	return json.Marshal(e)
+	data, err := json.Marshal(e)
+	if err != nil {
+		return nil, fmt.Errorf("\nerror serializing event: %w", err)
+	}
+	return data, nil
 }

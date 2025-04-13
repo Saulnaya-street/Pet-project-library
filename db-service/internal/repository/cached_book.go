@@ -22,7 +22,7 @@ type CachedBookRepository struct {
 	redisClient cache.IRedisClient
 }
 
-func NewCachedBookRepository(repo IBookRepository, redisClient cache.IRedisClient) IBookRepository {
+func CachedBookRepo(repo IBookRepository, redisClient cache.IRedisClient) IBookRepository {
 	return &CachedBookRepository{
 		repo:        repo,
 		redisClient: redisClient,
@@ -40,7 +40,7 @@ func getBookListKey(author, genre string) string {
 func (r *CachedBookRepository) Create(ctx context.Context, book *domain.Book) error {
 	err := r.repo.Create(ctx, book)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating book in database: %w", err)
 	}
 
 	bookJson, err := json.Marshal(book)
@@ -73,7 +73,7 @@ func (r *CachedBookRepository) GetByID(ctx context.Context, id uuid.UUID) (*doma
 
 	book, err := r.repo.GetByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting book from database: %w", err)
 	}
 
 	bookJson, err := json.Marshal(book)
@@ -108,7 +108,7 @@ func (r *CachedBookRepository) GetAll(ctx context.Context, author, genre string)
 
 	books, err := r.repo.GetAll(ctx, author, genre)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting list of books from database: %w", err)
 	}
 
 	booksJson, err := json.Marshal(books)
@@ -128,7 +128,7 @@ func (r *CachedBookRepository) GetAll(ctx context.Context, author, genre string)
 func (r *CachedBookRepository) Update(ctx context.Context, book *domain.Book) error {
 	err := r.repo.Update(ctx, book)
 	if err != nil {
-		return err
+		return fmt.Errorf("error updating book in database: %w", err)
 	}
 
 	bookJson, err := json.Marshal(book)
@@ -148,7 +148,7 @@ func (r *CachedBookRepository) Update(ctx context.Context, book *domain.Book) er
 func (r *CachedBookRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	err := r.repo.Delete(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("error deleting book from database: %w", err)
 	}
 
 	redisErr := r.redisClient.Delete(ctx, getBookKey(id))

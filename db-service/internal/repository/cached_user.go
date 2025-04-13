@@ -24,7 +24,7 @@ type CachedUserRepository struct {
 	redisClient cache.IRedisClient
 }
 
-func NewCachedUserRepository(repo IUserRepository, redisClient cache.IRedisClient) IUserRepository {
+func CachedUserRepo(repo IUserRepository, redisClient cache.IRedisClient) IUserRepository {
 	return &CachedUserRepository{
 		repo:        repo,
 		redisClient: redisClient,
@@ -46,7 +46,7 @@ func getEmailKey(email string) string {
 func (r *CachedUserRepository) Create(ctx context.Context, user *domain.User) error {
 	err := r.repo.Create(ctx, user)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating user in database: %w", err)
 	}
 
 	userJson, err := json.Marshal(user)
@@ -91,7 +91,7 @@ func (r *CachedUserRepository) GetByID(ctx context.Context, id uuid.UUID) (*doma
 
 	user, err := r.repo.GetByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting user from database: %w", err)
 	}
 
 	userJson, err := json.Marshal(user)
@@ -119,7 +119,7 @@ func (r *CachedUserRepository) GetByUsername(ctx context.Context, username strin
 
 	user, err := r.repo.GetByUsername(ctx, username)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting user by username from database: %w", err)
 	}
 
 	userJson, err := json.Marshal(user)
@@ -147,7 +147,7 @@ func (r *CachedUserRepository) GetByEmail(ctx context.Context, email string) (*d
 
 	user, err := r.repo.GetByEmail(ctx, email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting user by email from database: %w", err)
 	}
 
 	userJson, err := json.Marshal(user)
@@ -173,7 +173,7 @@ func (r *CachedUserRepository) Update(ctx context.Context, user *domain.User) er
 
 	err = r.repo.Update(ctx, user)
 	if err != nil {
-		return err
+		return fmt.Errorf("error updating user in database: %w", err)
 	}
 
 	userJson, err := json.Marshal(user)
@@ -197,7 +197,7 @@ func (r *CachedUserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 
 	err = r.repo.Delete(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("error deleting user from database: %w", err)
 	}
 
 	r.redisClient.Delete(ctx, getUserKey(id))
@@ -222,7 +222,7 @@ func (r *CachedUserRepository) GetAll(ctx context.Context) ([]domain.User, error
 
 	users, err := r.repo.GetAll(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting list of users from database: %w", err)
 	}
 
 	usersJson, err := json.Marshal(users)

@@ -10,37 +10,44 @@ import (
 	"log"
 )
 
-type BookServiceWithKafka struct {
+type BookServiceImpl struct {
 	bookRepo      repository.IBookRepository
 	eventProducer kafka.IEventProducer
 }
 
-func NewBookServiceWithKafka(bookRepo repository.IBookRepository, eventProducer kafka.IEventProducer) IBookService {
-	return &BookServiceWithKafka{
+func BookService(bookRepo repository.IBookRepository, eventProducer kafka.IEventProducer) IBookService {
+	return &BookServiceImpl{
 		bookRepo:      bookRepo,
 		eventProducer: eventProducer,
 	}
 }
 
-func (s *BookServiceWithKafka) GetByID(ctx context.Context, id uuid.UUID) (*domain.Book, error) {
-	return s.bookRepo.GetByID(ctx, id)
+func (s *BookServiceImpl) GetByID(ctx context.Context, id uuid.UUID) (*domain.Book, error) {
+	book, err := s.bookRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("error getting book by ID: %w", err)
+	}
+	return book, nil
 }
 
-func (s *BookServiceWithKafka) GetAll(ctx context.Context, author, genre string) ([]*domain.Book, error) {
-	return s.bookRepo.GetAll(ctx, author, genre)
+func (s *BookServiceImpl) GetAll(ctx context.Context, author, genre string) ([]*domain.Book, error) {
+	books, err := s.bookRepo.GetAll(ctx, author, genre)
+	if err != nil {
+		return nil, fmt.Errorf("error getting list of books: %w", err)
+	}
+	return books, nil
 }
 
-func (s *BookServiceWithKafka) Create(ctx context.Context, book *domain.Book) error {
+func (s *BookServiceImpl) Create(ctx context.Context, book *domain.Book) error {
 	if book.ID == uuid.Nil {
 		book.ID = uuid.New()
 	}
 
 	if err := s.bookRepo.Create(ctx, book); err != nil {
-		return err
+		return fmt.Errorf("error creating book: %w", err)
 	}
 
 	if err := s.eventProducer.PublishBookCreated(ctx, book); err != nil {
-
 		log.Printf("Error publishing book creation event: %v", err)
 	} else {
 		log.Printf("Book creation event published: %s (%s)", book.Name, book.ID)
@@ -49,7 +56,7 @@ func (s *BookServiceWithKafka) Create(ctx context.Context, book *domain.Book) er
 	return nil
 }
 
-func (s *BookServiceWithKafka) Update(ctx context.Context, book *domain.Book) error {
+func (s *BookServiceImpl) Update(ctx context.Context, book *domain.Book) error {
 
 	_, err := s.bookRepo.GetByID(ctx, book.ID)
 	if err != nil {
@@ -57,11 +64,10 @@ func (s *BookServiceWithKafka) Update(ctx context.Context, book *domain.Book) er
 	}
 
 	if err := s.bookRepo.Update(ctx, book); err != nil {
-		return err
+		return fmt.Errorf("error updating book: %w", err)
 	}
 
 	if err := s.eventProducer.PublishBookUpdated(ctx, book); err != nil {
-
 		log.Printf("Error publishing book update event: %v", err)
 	} else {
 		log.Printf("Book update event published: %s (%s)", book.Name, book.ID)
@@ -70,7 +76,7 @@ func (s *BookServiceWithKafka) Update(ctx context.Context, book *domain.Book) er
 	return nil
 }
 
-func (s *BookServiceWithKafka) Delete(ctx context.Context, id uuid.UUID) error {
+func (s *BookServiceImpl) Delete(ctx context.Context, id uuid.UUID) error {
 
 	book, err := s.bookRepo.GetByID(ctx, id)
 	if err != nil {
@@ -78,11 +84,10 @@ func (s *BookServiceWithKafka) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	if err := s.bookRepo.Delete(ctx, id); err != nil {
-		return err
+		return fmt.Errorf("error deleting book: %w", err)
 	}
 
 	if err := s.eventProducer.PublishBookDeleted(ctx, id); err != nil {
-
 		log.Printf("Error publishing book deletion event: %v", err)
 	} else {
 		log.Printf("Book deletion event published: %s (%s)", book.Name, id)

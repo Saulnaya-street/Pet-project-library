@@ -33,12 +33,12 @@ func NewController(opts ControllerOptions) *Controller {
 	var bookRepo repository.IBookRepository
 	var userRepo repository.IUserRepository
 
-	baseBookRepo := repository.NewBookRepository(opts.DB)
-	baseUserRepo := repository.NewUserRepository(opts.DB)
+	baseBookRepo := repository.BookRepo(opts.DB)
+	baseUserRepo := repository.UserRepo(opts.DB)
 
 	if opts.RedisClient != nil {
-		bookRepo = repository.NewCachedBookRepository(baseBookRepo, opts.RedisClient)
-		userRepo = repository.NewCachedUserRepository(baseUserRepo, opts.RedisClient)
+		bookRepo = repository.CachedBookRepo(baseBookRepo, opts.RedisClient)
+		userRepo = repository.CachedUserRepo(baseUserRepo, opts.RedisClient)
 	} else {
 		bookRepo = baseBookRepo
 		userRepo = baseUserRepo
@@ -46,8 +46,8 @@ func NewController(opts ControllerOptions) *Controller {
 
 	eventProducer := kafka.NewEventProducer(opts.KafkaClient)
 
-	bookService := service.NewBookServiceWithKafka(bookRepo, eventProducer)
-	userService := service.NewUserServiceWithKafka(userRepo, eventProducer)
+	bookService := service.BookService(bookRepo, eventProducer)
+	userService := service.UserService(userRepo, eventProducer)
 
 	bookHandler := handler.NewBookHandler(bookService)
 	userHandler := handler.NewUserHandler(userService)

@@ -23,7 +23,6 @@ func getEnvOrDefault(key, defaultValue string) string {
 }
 
 func main() {
-
 	dbConfig := repository.Config{
 		Host:     getEnvOrDefault("DB_HOST", "db"),
 		Port:     getEnvOrDefault("DB_PORT", "5432"),
@@ -60,7 +59,7 @@ func main() {
 	defer redisClient.Close()
 	log.Println("Successfully connected to Redis")
 
-	kafkaClient, err := kafka.NewKafkaClient(kafkaConfig, true, false) // isProducer=true, isConsumer=false
+	kafkaClient, err := kafka.NewKafkaClient(kafkaConfig)
 	if err != nil {
 		log.Fatalf("Failed to initialize Kafka: %s", err.Error())
 	}

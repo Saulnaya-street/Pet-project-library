@@ -57,7 +57,6 @@ func (p *EventProducer) PublishBookDeleted(ctx context.Context, id uuid.UUID) er
 }
 
 func (p *EventProducer) PublishUserCreated(ctx context.Context, user *domain.User) error {
-
 	safeUser := *user
 	safeUser.PasswordHash = ""
 
@@ -70,7 +69,6 @@ func (p *EventProducer) PublishUserCreated(ctx context.Context, user *domain.Use
 }
 
 func (p *EventProducer) PublishUserUpdated(ctx context.Context, user *domain.User) error {
-
 	safeUser := *user
 	safeUser.PasswordHash = ""
 
@@ -105,14 +103,14 @@ func (p *EventProducer) PublishUserLoggedIn(ctx context.Context, userId uuid.UUI
 func (p *EventProducer) publishEvent(ctx context.Context, event Event) error {
 	eventData, err := event.Serialize()
 	if err != nil {
-		return fmt.Errorf("ошибка сериализации события: %w", err)
+		return fmt.Errorf("event serialization error: %w", err)
 	}
 
 	err = p.client.Publish(ctx, string(event.Type), eventData)
 	if err != nil {
-		return fmt.Errorf("ошибка публикации события: %w", err)
+		return fmt.Errorf("event publishing error: %w", err)
 	}
 
-	log.Printf("Опубликовано событие %s с ID %s", event.Type, event.ID)
+	log.Printf("Event published %s ID %s", event.Type, event.ID)
 	return nil
 }
