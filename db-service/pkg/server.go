@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -41,9 +42,16 @@ func (s *Server) Run(port string) error {
 		WriteTimeout:   10 * time.Second,
 	}
 
-	return s.httpServer.ListenAndServe()
+	if err := s.httpServer.ListenAndServe(); err != nil {
+		return fmt.Errorf("error starting HTTP server: %w", err)
+	}
+
+	return nil
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
-	return s.httpServer.Shutdown(ctx)
+	if err := s.httpServer.Shutdown(ctx); err != nil {
+		return fmt.Errorf("error while stopping server: %w", err)
+	}
+	return nil
 }

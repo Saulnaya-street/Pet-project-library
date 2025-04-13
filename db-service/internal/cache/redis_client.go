@@ -46,17 +46,33 @@ func NewRedisClient(cfg RedisConfig) (IRedisClient, error) {
 }
 
 func (r *RedisClient) Close() error {
-	return r.client.Close()
+	if err := r.client.Close(); err != nil {
+		return fmt.Errorf("error closing connection to redis: %w", err)
+	}
+	return nil
 }
 
 func (r *RedisClient) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
-	return r.client.Set(ctx, key, value, expiration).Err()
+	if err := r.client.Set(ctx, key, value, expiration).Err(); err != nil {
+		return fmt.Errorf("error setting value in redis: %w", err)
+	}
+	return nil
 }
 
 func (r *RedisClient) Get(ctx context.Context, key string) (string, error) {
-	return r.client.Get(ctx, key).Result()
+	val, err := r.client.Get(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return "", err
+		}
+		return "", fmt.Errorf("error getting value from redis: %w", err)
+	}
+	return val, nil
 }
 
 func (r *RedisClient) Delete(ctx context.Context, key string) error {
-	return r.client.Del(ctx, key).Err()
+	if err := r.client.Del(ctx, key).Err(); err != nil {
+		return fmt.Errorf("error deleting key from redis: %w", err)
+	}
+	return nil
 }

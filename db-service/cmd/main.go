@@ -3,11 +3,13 @@ package main
 import (
 	"awesomeProject22/db-service/internal/cache"
 	"awesomeProject22/db-service/internal/controller"
+	"awesomeProject22/db-service/internal/kafka"
 	"awesomeProject22/db-service/internal/repository"
 	"context"
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -37,6 +39,12 @@ func main() {
 		DB:       0,
 	}
 
+	kafkaConfig := kafka.KafkaConfig{
+		Brokers: strings.Split(getEnvOrDefault("KAFKA_BROKERS", "kafka:9092"), ","),
+		Topic:   getEnvOrDefault("KAFKA_TOPIC", "library-events"),
+		GroupID: getEnvOrDefault("KAFKA_GROUP_ID", "library-service"),
+	}
+
 	db, err := repository.NewPostgresDB(dbConfig)
 	if err != nil {
 		log.Fatalf("Failed to initialize db: %s", err.Error())
@@ -51,10 +59,17 @@ func main() {
 	defer redisClient.Close()
 	log.Println("Successfully connected to Redis")
 
-	// Используем новый универсальный конструктор
+	kafkaClient, err := kafka.NewKafkaClient(kafkaConfig)
+	if err != nil {
+		log.Fatalf("Failed to initialize Kafka: %s", err.Error())
+	}
+	defer kafkaClient.Close()
+	log.Println("Successfully connected to Kafka as producer")
+
 	ctrl := controller.NewController(controller.ControllerOptions{
 		DB:          db,
 		RedisClient: redisClient,
+		KafkaClient: kafkaClient,
 	})
 
 	srv := ctrl.GetServer()
@@ -80,6 +95,8 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatalf("Error occurred on server shutting down: %s", err.Error())
 	}
+
+	ctrl.CloseConnections()
 
 	log.Print("Server successfully stopped")
 }

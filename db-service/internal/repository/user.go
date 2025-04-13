@@ -14,7 +14,7 @@ type UserRepositoryImpl struct {
 	db *pgxpool.Pool
 }
 
-func NewUserRepository(db *pgxpool.Pool) IUserRepository {
+func UserRepo(db *pgxpool.Pool) IUserRepository {
 	return &UserRepositoryImpl{
 		db: db,
 	}
@@ -30,7 +30,7 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, user *domain.User) erro
 	_, err := r.db.Exec(ctx, query,
 		user.ID, user.Username, user.Email, user.PasswordHash, user.IsAdmin)
 	if err != nil {
-		return fmt.Errorf("ошибка при создании пользователя: %w", err)
+		return fmt.Errorf("error creating user: %w", err)
 	}
 	return nil
 }
@@ -43,9 +43,9 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*domain
 		&user.ID, &user.Username, &user.Email, &user.IsAdmin)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("пользователь с ID %s не найден", id)
+			return nil, fmt.Errorf("user with ID %s not found", id)
 		}
-		return nil, fmt.Errorf("ошибка при запросе пользователя с ID %s: %w", id, err)
+		return nil, fmt.Errorf("error requesting user with ID %s: %w", id, err)
 	}
 
 	return &user, nil
@@ -59,9 +59,9 @@ func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string)
 		&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.IsAdmin)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("пользователь с именем %s не найден", username)
+			return nil, fmt.Errorf("username %s not found", username)
 		}
-		return nil, fmt.Errorf("ошибка при запросе пользователя с именем %s: %w", username, err)
+		return nil, fmt.Errorf("error requesting user with name %s: %w", username, err)
 	}
 
 	return &user, nil
@@ -76,9 +76,9 @@ func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 		&user.ID, &user.Username, &user.Email, &user.IsAdmin)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("пользователь с email %s не найден", email)
+			return nil, fmt.Errorf("user with email %s not found", email)
 		}
-		return nil, fmt.Errorf("ошибка при запросе пользователя с email %s: %w", email, err)
+		return nil, fmt.Errorf("error when requesting user with email %s: %w", email, err)
 	}
 
 	return &user, nil
@@ -89,7 +89,7 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, user *domain.User) erro
 	_, err := r.db.Exec(ctx, query,
 		user.Username, user.Email, user.PasswordHash, user.IsAdmin, user.ID)
 	if err != nil {
-		return fmt.Errorf("ошибка при обновлении пользователя с ID %s: %w", user.ID, err)
+		return fmt.Errorf("error updating user with ID %s: %w", user.ID, err)
 	}
 	return nil
 }
@@ -98,7 +98,7 @@ func (r *UserRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM users WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id)
 	if err != nil {
-		return fmt.Errorf("ошибка при удалении пользователя с ID %s: %w", id, err)
+		return fmt.Errorf("error deleting user with ID %s: %w", id, err)
 	}
 	return nil
 }
@@ -108,7 +108,7 @@ func (r *UserRepositoryImpl) GetAll(ctx context.Context) ([]domain.User, error) 
 
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка при получении списка пользователей: %w", err)
+		return nil, fmt.Errorf("error getting list of users: %w", err)
 	}
 	defer rows.Close()
 
@@ -118,13 +118,13 @@ func (r *UserRepositoryImpl) GetAll(ctx context.Context) ([]domain.User, error) 
 		var user domain.User
 		err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.IsAdmin)
 		if err != nil {
-			return nil, fmt.Errorf("ошибка при сканировании данных пользователя: %w", err)
+			return nil, fmt.Errorf("error scanning user data: %w", err)
 		}
 		users = append(users, user)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("ошибка после обработки результатов: %w", err)
+		return nil, fmt.Errorf("error after processing results: %w", err)
 	}
 
 	return users, nil

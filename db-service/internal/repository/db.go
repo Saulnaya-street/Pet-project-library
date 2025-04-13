@@ -22,17 +22,17 @@ func NewPostgresDB(cfg Config) (*pgxpool.Pool, error) {
 
 	poolConfig, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка разбора строки подключения: %w", err)
+		return nil, fmt.Errorf("error parsing connection string: %w", err)
 	}
 
 	pool, err := pgxpool.ConnectConfig(context.Background(), poolConfig)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка подключения к базе данных: %w", err)
+		return nil, fmt.Errorf("database connection error: %w", err)
 	}
 
 	// Проверяем соединение
 	if err := pool.Ping(context.Background()); err != nil {
-		return nil, fmt.Errorf("ошибка проверки соединения: %w", err)
+		return nil, fmt.Errorf("connection check error: %w", err)
 	}
 
 	return pool, nil

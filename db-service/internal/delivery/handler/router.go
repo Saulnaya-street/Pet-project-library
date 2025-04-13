@@ -17,14 +17,13 @@ func NewRouter(bookHandler IBookHandler, userHandler IUserHandler) *Router {
 }
 
 func (r *Router) RegisterRoutes(router *mux.Router) {
-	// Регистрируем маршруты для книг
+
 	router.HandleFunc("/api/books", r.bookHandler.GetAllBooks).Methods("GET")
 	router.HandleFunc("/api/books/{id}", r.bookHandler.GetBook).Methods("GET")
 	router.HandleFunc("/api/books", r.bookHandler.CreateBook).Methods("POST")
 	router.HandleFunc("/api/books/{id}", r.bookHandler.UpdateBook).Methods("PUT")
 	router.HandleFunc("/api/books/{id}", r.bookHandler.DeleteBook).Methods("DELETE")
 
-	// Регистрируем маршруты для пользователей
 	router.HandleFunc("/api/users", r.userHandler.GetAllUsers).Methods("GET")
 	router.HandleFunc("/api/users/{id}", r.userHandler.GetUser).Methods("GET")
 	router.HandleFunc("/api/users", r.userHandler.CreateUser).Methods("POST")
