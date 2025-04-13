@@ -33,7 +33,7 @@ func NewController(opts ControllerOptions) *Controller {
 	var bookRepo repository.IBookRepository
 	var userRepo repository.IUserRepository
 
-	baseBookRepo := repository.BookRepo(opts.DB)
+	baseBookRepo := repository.NewBookRepository(opts.DB)
 	baseUserRepo := repository.UserRepo(opts.DB)
 
 	if opts.RedisClient != nil {

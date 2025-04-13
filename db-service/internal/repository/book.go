@@ -15,7 +15,7 @@ type BookRepositoryImpl struct {
 	db *pgxpool.Pool
 }
 
-func BookRepo(db *pgxpool.Pool) IBookRepository {
+func NewBookRepository(db *pgxpool.Pool) IBookRepository {
 	return &BookRepositoryImpl{
 		db: db,
 	}
