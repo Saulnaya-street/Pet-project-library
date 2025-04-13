@@ -1,8 +1,10 @@
-FROM golang:1.23-alpine AS builder
+FROM golang:1.22-alpine AS builder
 WORKDIR /app
 
 COPY go.mod ./
 
+
+RUN touch go.sum
 
 
 RUN go mod download && go mod tidy
@@ -12,9 +14,11 @@ COPY . .
 RUN ls -la /app
 
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o main ./db-service/cmd/main.go > /tmp/build.log 2>&1 || (cat /tmp/build.log && false)
+RUN go mod tidy
 
-FROM golang:1.23-alpine
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o main ./db-service/cmd/main.go
+
+FROM golang:1.22-alpine
 
 WORKDIR /app
 

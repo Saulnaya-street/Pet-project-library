@@ -3,11 +3,13 @@ package main
 import (
 	"awesomeProject22/db-service/internal/cache"
 	"awesomeProject22/db-service/internal/controller"
+	"awesomeProject22/db-service/internal/kafka"
 	"awesomeProject22/db-service/internal/repository"
 	"context"
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -21,6 +23,7 @@ func getEnvOrDefault(key, defaultValue string) string {
 }
 
 func main() {
+
 	dbConfig := repository.Config{
 		Host:     getEnvOrDefault("DB_HOST", "db"),
 		Port:     getEnvOrDefault("DB_PORT", "5432"),
@@ -37,6 +40,12 @@ func main() {
 		DB:       0,
 	}
 
+	kafkaConfig := kafka.KafkaConfig{
+		Brokers: strings.Split(getEnvOrDefault("KAFKA_BROKERS", "kafka:9092"), ","),
+		Topic:   getEnvOrDefault("KAFKA_TOPIC", "library-events"),
+		GroupID: getEnvOrDefault("KAFKA_GROUP_ID", "library-service"),
+	}
+
 	db, err := repository.NewPostgresDB(dbConfig)
 	if err != nil {
 		log.Fatalf("Failed to initialize db: %s", err.Error())
@@ -51,11 +60,20 @@ func main() {
 	defer redisClient.Close()
 	log.Println("Successfully connected to Redis")
 
-	// Используем новый универсальный конструктор
-	ctrl := controller.NewController(controller.ControllerOptions{
+	kafkaClient, err := kafka.NewKafkaClient(kafkaConfig, true, true)
+	if err != nil {
+		log.Fatalf("Failed to initialize Kafka: %s", err.Error())
+	}
+	defer kafkaClient.Close()
+	log.Println("Successfully connected to Kafka")
+
+	ctrl := controller.NewControllerWithKafka(controller.ControllerWithKafkaOptions{
 		DB:          db,
 		RedisClient: redisClient,
+		KafkaClient: kafkaClient,
 	})
+
+	ctrl.StartKafkaConsumer()
 
 	srv := ctrl.GetServer()
 	port := getEnvOrDefault("PORT", "8080")
@@ -74,12 +92,16 @@ func main() {
 
 	log.Print("Server shutting down...")
 
+	ctrl.StopKafkaConsumer()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatalf("Error occurred on server shutting down: %s", err.Error())
 	}
+
+	ctrl.CloseConnections()
 
 	log.Print("Server successfully stopped")
 }
